@@ -1,0 +1,148 @@
+// =============================================================================
+// Site SCSS - Main Entry Point
+// =============================================================================
+// This is the main entry point for the new refactored SASS structure.
+// @use/@forward must come FIRST, then @import, then actual CSS rules.
+//
+// Using modern @use syntax for proper module scope and intellisense.
+// =============================================================================
+
+@use 'variables/colors' as *;
+
+// -----------------------------------------------------------------------------
+// 2. Our Mixins (Depend on variables)
+// -----------------------------------------------------------------------------
+ @use 'extenders/palettes' as *;
+
+@use 'page-units/semantic-units';
+@use 'page-units/containers';
+@use 'page-units/topbar';
+@use 'page-units/navbar';
+@use 'page-units/special-items';
+@use 'page-units/form-fields';
+
+@import "../../../node_modules/compass-mixins/lib/compass";
+@import "../../../node_modules/compass-mixins/lib/animate";
+@import url('https://fonts.googleapis.com/css2?family=Caveat&display=swap');
+
+// -----------------------------------------------------------------------------
+// 8. Application-Specific Overrides & Utilities
+// -----------------------------------------------------------------------------
+
+// Grid toolbar alignment and spacing
+.grid-toolbar {
+  display: flex !important;
+  justify-content: space-between !important;
+  margin-bottom: .5rem;
+  
+  .btn-group {
+    margin-left: auto !important;
+  }
+}
+
+
+// =============================================================================
+// Links - Default and Variants
+// =============================================================================
+
+a {
+    color: map-get($colors, 'fg-2');
+    font-weight: bold;
+    text-decoration: none;
+
+    &:hover {
+        color: map-get($colors, 'fg-0');
+        text-decoration: none;
+    }
+}
+
+.link,
+.nav-link {
+    color: map-get($colors, 'fg-2');
+    font-weight: bold;
+    text-decoration: none;
+
+    &:hover {
+        color: map-get($colors, 'fg-0');
+    }
+
+        &.active {
+                color: map-get($colors, 'primary');
+                background-color: map-get($colors, 'primary-bright');
+                border-radius: 0.25rem;
+        }
+}
+
+// List Group Palette Theming
+.list-group-item {
+    background-color: map-get($colors, 'bg-2');
+    color: map-get($colors, 'fg-0');
+    border: 1px solid map-get($colors, 'bg-3');
+    &.active, &.list-group-item-action.active {
+        background-color: map-get($colors, 'primary');
+        color: map-get($colors, 'fg-0');
+        border-color: map-get($colors, 'primary-dark');
+    }
+    &.list-group-item-action:hover, &.list-group-item-action:focus {
+        background-color: map-get($colors, 'primary-bright');
+        color: map-get($colors, 'fg-0');
+    }
+    &.list-group-item-secondary {
+        background-color: map-get($colors, 'secondary');
+        color: map-get($colors, 'bg-0');
+    }
+    &.list-group-item-success {
+        background-color: map-get($colors, 'success');
+        color: map-get($colors, 'fg-0');
+    }
+    &.list-group-item-danger {
+        background-color: map-get($colors, 'danger');
+        color: map-get($colors, 'fg-0');
+    }
+    &.list-group-item-warning {
+        background-color: map-get($colors, 'warning');
+        color: map-get($colors, 'bg-0');
+    }
+    &.list-group-item-info {
+        background-color: map-get($colors, 'info');
+        color: map-get($colors, 'fg-0');
+    }
+    &.list-group-item-light {
+        background-color: map-get($colors, 'light');
+        color: map-get($colors, 'bg-0');
+    }
+}
+
+// Dropdown Palette Theming
+.dropdown-menu {
+    background-color: map-get($colors, 'bg-2');
+    color: map-get($colors, 'fg-0');
+    border: 1px solid map-get($colors, 'bg-3');
+    .dropdown-item {
+        color: map-get($colors, 'fg-0');
+        &:hover, &:focus {
+            background-color: map-get($colors, 'primary');
+            color: map-get($colors, 'fg-0');
+        }
+        &.active, &:active {
+            background-color: map-get($colors, 'primary-dark');
+            color: map-get($colors, 'fg-0');
+        }
+    }
+}
+
+// Popover Palette Theming
+.popover {
+    background-color: map-get($colors, 'bg-2');
+    color: map-get($colors, 'fg-0');
+    border: 1px solid map-get($colors, 'primary');
+    .popover-header {
+        background-color: map-get($colors, 'primary');
+        color: map-get($colors, 'fg-0');
+        border-bottom: 1px solid map-get($colors, 'primary-dark');
+    }
+    .popover-body {
+        background-color: map-get($colors, 'bg-2');
+        color: map-get($colors, 'fg-0');
+    }
+}

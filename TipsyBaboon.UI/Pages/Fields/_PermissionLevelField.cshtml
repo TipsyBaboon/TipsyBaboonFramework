@@ -1,0 +1,122 @@
+@model TipsyBaboon.UI.Models.FieldViewModel<Dictionary<int, string>>
+@using TipsyBaboon.Core
+@using TipsyBaboon.Core.Data
+@using TipsyBaboon.UI.Rendering
+@using TipsyBaboon.Core.Models
+
+@{
+    var name = Model.Column.PropertyName;
+    var elementId = Model.ElementId;
+    var inputName = Model.InputName;
+    var isGridContext = Model.IsGridContext;
+    var currentValueObj = Model.Instance?.GetType().GetProperty(Model.Column.PropertyName)?.GetValue(Model.Instance);
+    var currentValueInt = currentValueObj != null ? Convert.ToInt32(currentValueObj) : (int?)null;
+    var isReadOnly = ValidationHelper.IsReadOnly(Model.Column);
+    var validationAttrs = ValidationHelper.FormatValidationAttributes(Model.Column);
+    
+    // Grid context uses tighter styling
+    var dropdownClass = isGridContext ? "permission-level-grid-dropdown" : "permission-level-dropdown";
+    var btnSizeClass = "";
+    
+    // Determine which options should be available based on record context
+    var availableOptions = new Dictionary<int, string>();
+    
+    // Check if this is in a RolePermission context
+    var recordIdProp = Model.Instance?.GetType().GetProperty("RecordId");
+    Guid? recordId = recordIdProp?.GetValue(Model.Instance) as Guid?;
+    
+    bool allowNone = true;
+    bool allowOwn = true;
+    bool allowGroup = true;
+    bool allowAll = true;
+    
+    // Determine if the record allows group ownership and has ownership at all
+    bool recordAllowsGroupOwnership = true;
+    bool recordHasOwnership = true;
+    
+    // Flag for forcing read-only on write operations for non-ownership models
+    
+    if (recordId.HasValue)
+    {
+        // Get the model name to look up its schema
+        var modelName = Model.Instance?.GetType().GetProperty("ModelName")?.GetValue(Model.Instance) as string;
+        
+        if (!string.IsNullOrEmpty(modelName))
+        {
+            var targetSchema = ModelRegistry.GetModel(modelName);
+            if (targetSchema != null)
+            {
+                // Check if record has ownership at all
+                recordHasOwnership = targetSchema.HasOwnership;
+                
+                // Check if record allows group ownership
+                recordAllowsGroupOwnership = targetSchema.OwnershipLevels.Contains(OwnershipLevel.Group);
+            }
+        }
+    }
+    
+   
+    if (!recordHasOwnership)
+    {
+        // For non-ownership models (governance entities like User, Role, etc.)
+        allowOwn = false;
+        allowGroup = false;
+        
+
+    }
+    else if (!recordAllowsGroupOwnership)
+    {
+        // If record doesn't allow group ownership, don't show group option
+        allowGroup = false;
+    }
+    
+    // Build available options dictionary
+    if (allowNone) availableOptions.Add((int)PermissionLevel.None, "None");
+    if (allowOwn) availableOptions.Add((int)PermissionLevel.Own, "Own");
+    if (allowGroup) availableOptions.Add((int)PermissionLevel.Group, "Group");
+    if (allowAll) availableOptions.Add((int)PermissionLevel.All, "All");
+    
+    // Icon mapping for PermissionLevel
+    var iconMap = new Dictionary<int, string>
+    {
+        { (int)PermissionLevel.None, "bi-x-circle" },
+        { (int)PermissionLevel.Own, "bi-person" },
+        { (int)PermissionLevel.Group, "bi-people" },
+        { (int)PermissionLevel.All, "bi-globe" }
+    };
+    
+    var currentIcon = currentValueInt.HasValue && iconMap.ContainsKey(currentValueInt.Value) 
+        ? iconMap[currentValueInt.Value] 
+        : "bi-x-circle";
+        
+    // Combine read-only from column definition with forced read-only for write ops
+}
+
+<div class="dropdown @dropdownClass" @(isGridContext ? "style=\"display: inline-block;\"" : "")>
+    <button class="btn @btnSizeClass dropdown-toggle" 
+            type="button" 
+            id="@elementId-btn" 
+            data-bs-toggle="dropdown" 
+            aria-expanded="false"
+            @(isReadOnly ? "disabled" : "")
+            title="@(currentValueInt.HasValue && availableOptions.ContainsKey(currentValueInt.Value) ? availableOptions[currentValueInt.Value] : "None")">
+        <i class="bi @currentIcon"></i>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="@elementId-btn">
+        @foreach (var kvp in availableOptions.OrderBy(x => x.Key))
+        {
+            var icon = iconMap[kvp.Key];
+            var isSelected = currentValueInt.HasValue && kvp.Key == currentValueInt.Value;
+            <li>
+                <a class="dropdown-item permission-level-option @(isSelected ? "active" : "")" 
+                   href="#" 
+                   data-value="@kvp.Key"
+                   data-icon="@icon"
+                   data-target="@elementId">
+                    <i class="bi @icon me-2"></i>@kvp.Value
+                </a>
+            </li>
+        }
+    </ul>
+    <input type="hidden" id="@elementId" name="@inputName" value="@(currentValueInt?.ToString() ?? "0")" @Html.Raw(validationAttrs) @Html.Raw(Model.FieldContextAttribute) />
+</div>

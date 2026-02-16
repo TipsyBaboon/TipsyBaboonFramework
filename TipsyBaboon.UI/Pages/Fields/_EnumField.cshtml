@@ -1,0 +1,63 @@
+@model TipsyBaboon.UI.Models.FieldViewModel<Dictionary<int, string>>
+@using TipsyBaboon.UI.Rendering
+
+@{
+    var name = Model.Column.PropertyName;
+    var elementId = Model.ElementId;
+    var inputName = Model.InputName;
+    var currentValueObj = Model.Instance?.GetType().GetProperty(Model.Column.PropertyName)?.GetValue(Model.Instance);
+    var currentValueInt = currentValueObj != null ? Convert.ToInt32(currentValueObj) : (int?)null;
+    var isReadOnly = ValidationHelper.IsReadOnly(Model.Column);
+    var validationAttrs = ValidationHelper.FormatValidationAttributes(Model.Column);
+    var enumDictionary = Model.Value ?? new Dictionary<int, string>();
+    var controlName = Model.Column.ControlName;
+    
+    // Determine rendering mode
+    var useButtonGroup = !string.IsNullOrEmpty(controlName) && 
+                         (controlName.Equals("buttongroup", StringComparison.OrdinalIgnoreCase) || 
+                          controlName.Equals("buttons", StringComparison.OrdinalIgnoreCase));
+    var usePlainRadio = !string.IsNullOrEmpty(controlName) && controlName.Equals("radio", StringComparison.OrdinalIgnoreCase);
+}
+
+@if (useButtonGroup)
+{
+    @* Bootstrap button group via [FieldControl("buttongroup")] opt-in *@
+    <div class="btn-group" role="group" aria-label="@(Model.Column.DisplayName ?? name)">
+        @foreach (var kvp in enumDictionary.OrderBy(x => x.Key))
+        {
+            var radioId = $"{elementId}_{kvp.Key}";
+            var isSelected = currentValueInt.HasValue && kvp.Key == currentValueInt.Value;
+            <input type="radio" class="btn-check" name="@inputName" id="@radioId" value="@kvp.Key" 
+                   autocomplete="off" @(isSelected ? "checked" : "") @(isReadOnly ? "disabled" : "") @Html.Raw(validationAttrs) @Html.Raw(Model.FieldContextAttribute) />
+            <label class="btn btn-outline-primary" for="@radioId">@kvp.Value</label>
+        }
+    </div>
+}
+else if (usePlainRadio)
+{
+    @* Plain radio buttons via [FieldControl("radio")] opt-in *@
+    <div class="radio-group">
+        @foreach (var kvp in enumDictionary.OrderBy(x => x.Key))
+        {
+            var radioId = $"{elementId}_{kvp.Key}";
+            var isSelected = currentValueInt.HasValue && kvp.Key == currentValueInt.Value;
+            <div class="form-check">
+                <input class="form-check-input" type="radio" name="@inputName" id="@radioId" value="@kvp.Key" 
+                       @(isSelected ? "checked" : "") @(isReadOnly ? "disabled" : "") @Html.Raw(validationAttrs) @Html.Raw(Model.FieldContextAttribute) />
+                <label class="form-check-label" for="@radioId">@kvp.Value</label>
+            </div>
+        }
+    </div>
+}
+else
+{
+    @* Default: Dropdown select *@
+    <select id="@elementId" name="@inputName" class="form-select" @(isReadOnly ? "disabled" : "") @Html.Raw(validationAttrs) @Html.Raw(Model.FieldContextAttribute)>
+        <option value="">-- Select @(Model.Column.DisplayName ?? name) --</option>
+        @foreach (var kvp in enumDictionary.OrderBy(x => x.Key))
+        {
+            var isSelected = currentValueInt.HasValue && kvp.Key == currentValueInt.Value;
+            <option value="@kvp.Key" selected="@(isSelected ? "selected" : null)">@kvp.Value</option>
+        }
+    </select>
+}

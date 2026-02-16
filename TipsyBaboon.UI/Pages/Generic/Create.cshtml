@@ -1,0 +1,120 @@
+@page "/{module}/{type}/create"
+@model TipsyBaboon.UI.Pages.Generic.CreateModel
+@using TipsyBaboon.UI.Rendering
+@using TipsyBaboon.Core
+@using TipsyBaboon.Core.Interfaces
+@using TipsyBaboon.Core.Models
+@{
+    if (Model.IsModal)
+    {
+        Layout = null;
+    }
+    else
+    {
+        Layout = Model.LayoutPage;
+    }
+    
+    var pageTitle = $"Create {Model.TypeName}";
+    ViewData["Title"] = pageTitle;
+}
+
+@if (!Model.IsModal)
+{
+    @* Model-specific styles *@
+    foreach (var stylePath in Model.ModelStylePaths)
+    {
+        <link rel="stylesheet" href="@stylePath" />
+    }
+}
+
+<script src="@Html.CacheVersionUrl("/_content/TipsyBaboon.UI/js/tipsybaboon-core-loader.js")"></script>
+
+@{
+    FieldRenderer.BeginScriptCollection();
+}
+
+@if (Model.IsModal)
+{
+    <div class="modal-header">
+        <h5 class="modal-title">@pageTitle</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <div class="modal-body">
+        @await Html.PartialAsync("_CreateFormContent", Model)
+    </div>
+    <div class="modal-footer d-flex justify-content-between align-items-end">
+        <div>
+            @{
+                var entityModel = Model.Entity as TipsyBaboonModel;
+                var defaultLevel = Model.OwnershipLevels.Count > 0 ? Model.OwnershipLevels.Max() : OwnershipLevel.Public;
+                var privacyModel = new TipsyBaboon.UI.Models.PrivacySelectorModel
+                {
+                    HasOwnership = Model.HasOwnership,
+                    OwnershipLevels = Model.OwnershipLevels,
+                    IsOwner = true,
+                    IsCreate = true,
+                    CurrentLevel = defaultLevel,
+                    CurrentGroupId = entityModel?.GroupId,
+                    CurrentGroupName = Model.CurrentGroupName,
+                    UserGroups = Model.UserGroups,
+                    IsReadOnly = false,
+                    OwnerDisplayName = Model.OwnerDisplayName,
+                    OwnerId = Model.CurrentUserId
+                };
+            }
+            @await Html.PartialAsync("_PrivacySelector", privacyModel)
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary btn-save" disabled>
+                <i class="bi bi-floppy me-1"></i> Create
+            </button>
+        </div>
+    </div>
+    var fieldScripts = FieldRenderer.EndScriptCollection().Select(s => s.Contains('/') || s.Contains('.') ? Html.CacheVersionUrl(s) : s).ToList();
+    var allScripts = Model.ModelScriptPaths.Select(s => Html.CacheVersionUrl(s)).Concat(fieldScripts).ToList();
+    var scriptsJson = System.Text.Json.JsonSerializer.Serialize(allScripts);
+    <script>
+    (async function() {
+        var loader = TipsyBaboon.Loader;
+        await loader.EnsureFormDependencies();
+        await loader.LoadAll(@Html.Raw(scriptsJson));
+        var $form = $('#@Model.FormId');
+            $form.tipsyBaboonForm({ isCreate: true, detailUrlBase: '@Model.DetailUrlBase',
+                    fullScreenRedirect: @Model.ShouldRedirectAfterCreate.ToString().ToLower() });
+        $form[0].dispatchEvent(new CustomEvent('form:ready', { bubbles: true }));
+    })();
+    </script>
+}
+else
+{
+    <div class="container-fluid" data-form-id="@Model.FormId">
+        <div class="d-flex justify-content-center align-items-center mb-3">
+            <h4 class="mb-0">@pageTitle</h4>
+        </div>
+
+        @await Html.PartialAsync("_CreateFormContent", Model)
+    </div>
+
+    var fieldScripts = FieldRenderer.EndScriptCollection().Select(s => s.Contains('/') || s.Contains('.') ? Html.CacheVersionUrl(s) : s).ToList();
+    var allScripts = Model.ModelScriptPaths.Select(s => Html.CacheVersionUrl(s)).Concat(fieldScripts).ToList();
+    var scriptsJson = System.Text.Json.JsonSerializer.Serialize(allScripts);
+
+    @section Scripts
+    {
+        <script>
+        (async function() {
+            var loader = TipsyBaboon.Loader;
+            await loader.EnsureFormDependencies();
+            await loader.LoadAll(@Html.Raw(scriptsJson));
+            var $form = $('#@Model.FormId');
+            $form.tipsyBaboonForm({ 
+                isCreate: true,
+                detailUrlBase: '@Model.DetailUrlBase',
+                fullScreenRedirect: @Model.ShouldRedirectAfterCreate.ToString().ToLower()
+            });
+            $form[0].dispatchEvent(new CustomEvent('form:ready', { bubbles: true }));
+        })();
+        </script>
+    }
+}

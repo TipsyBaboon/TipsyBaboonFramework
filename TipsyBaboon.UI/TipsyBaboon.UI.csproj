@@ -1,0 +1,56 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <EnableDefaultContentItems>true</EnableDefaultContentItems>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>TipsyBaboon.UI</PackageId>
+    <Version>1.1.0</Version>
+    <Authors>Tipsy Baboon</Authors>
+    <Company>Tipsy Baboon</Company>
+    <Product>TipsyBaboon Framework</Product>
+    <Description>Razor Pages UI components for TipsyBaboon. Auto-generates detail/create/index pages, generic CRUD APIs, Bootstrap-based responsive interfaces, and extensible field renderers. Includes inline editing, modal dialogs, permission UI, and change tracking views.</Description>
+    <Copyright>Copyright © 2026 Tipsy Baboon</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl></PackageProjectUrl>
+    <RepositoryUrl></RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>tipsybaboon;rad;framework;razor-pages;bootstrap;ui;asp.net-core;auto-generation;crud</PackageTags>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <!-- Embed only JS files - CSS is consumer-controlled -->
+  <ItemGroup>
+    <EmbeddedResource Include="wwwroot\js\**\*.js" />
+	<Content Update="**\*.cshtml" Pack="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="10.0.2" />
+    <PackageReference Include="QRCoder" Version="1.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="TipsyBaboon.Core" Version="1.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="icon.png" Pack="true" PackagePath="" />
+    <None Include="README.md" Pack="true" PackagePath="" Condition="Exists('README.md')" />
+  </ItemGroup>
+
+</Project>

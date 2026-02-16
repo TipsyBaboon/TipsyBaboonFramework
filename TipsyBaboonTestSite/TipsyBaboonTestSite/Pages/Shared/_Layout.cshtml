@@ -1,0 +1,185 @@
+@using TipsyBaboon.SqlServer.Configuration
+@using TipsyBaboon.UI.Configuration
+@inject TipsyBaboonDatabaseConfigurationService ConfigService
+@{
+    var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
+    var uiConfig = !isAuthenticated ? await ConfigService.LoadConfigurationAsync<UIConfiguration>() : null;
+    var impersonationKey = User.FindFirst("ImpersonationKey")?.Value;
+    var isImpersonating = !string.IsNullOrEmpty(impersonationKey);
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - TipsyBaboonTestSite</title>
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/font/bootstrap-icons.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/fontawesome/css/all.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    <link rel="shortcut icon" href="~/images/favicon.png" />
+</head>
+<body>
+    <div class="container-scroller">
+        <div class="horizontal-menu">
+            <!-- Top Navbar -->
+            <nav class="navbar top-navbar col-lg-12 col-12 p-0">
+                <div class="container-fluid">
+                    @if (isAuthenticated)
+                    {
+                        <!-- Authenticated: Logo Left + User Dropdown Right -->
+                        <div class="navbar-menu-wrapper d-flex align-items-center justify-content-between">
+                            <div class="navbar-brand-wrapper d-flex align-items-center">
+                                <a class="navbar-brand brand-logo" asp-area="" asp-page="/Index">
+                                    <img src="~/images/tipsy-baboon-full-text.png" alt="TipsyBaboon" />
+                                </a>
+                                <a class="navbar-brand brand-logo-mini" asp-area="" asp-page="/Index">
+                                    <img src="~/images/tipsy-baboon-face.png" alt="TipsyBaboon" />
+                                </a>
+                                <span class="sub-brand">: Test Site</span>
+                            </div>
+                            <ul class="navbar-nav navbar-nav-right">
+                                <li class="nav-item nav-profile dropdown">
+                                    <a class="nav-link d-flex align-items-center" href="#" data-bs-toggle="dropdown" id="profileDropdown">
+                                        <i class="fas fa-user-circle" style="font-size: 28px;"></i>
+                                        <i class="fas fa-chevron-down ms-1" style="font-size: 12px;"></i>
+                                    </a>
+                                    <div class="dropdown-menu dropdown-menu-end navbar-dropdown" aria-labelledby="profileDropdown">
+                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
+                                            <i class="fas fa-cog me-2"></i>
+                                            Settings
+                                        </a>
+
+                                        @if (isImpersonating)
+                                        {
+                                            <button type="button" class="dropdown-item" onclick="endImpersonation()">
+                                                <i class="bi bi-box-arrow-left me-2"></i>
+                                                End Impersonation
+                                            </button>
+                                        }
+
+                                        <form method="post" asp-area="Identity" asp-page="/Account/Logout">
+                                            <button type="submit" class="dropdown-item">
+                                                <i class="fas fa-sign-out-alt me-2"></i>
+                                                Logout
+                                            </button>
+                                        </form>
+                                    </div>
+                                </li>
+                            </ul>
+                            <button class="navbar-toggler navbar-toggler-right d-lg-none align-self-center" type="button" data-toggle="horizontal-menu-toggle">
+                                <i class="fas fa-bars"></i>
+                            </button>
+                        </div>
+                    }
+                    else
+                    {
+                        <!-- Not Authenticated: Centered Logo -->
+                        <div class="navbar-menu-wrapper d-flex align-items-center justify-content-center">
+                            <div class="navbar-brand-wrapper d-flex align-items-center">
+                                <a class="navbar-brand brand-logo" asp-area="" asp-page="/Index">
+                                    <img src="~/images/tipsy-baboon-full-text.png" alt="TipsyBaboon Fishing" />
+                                </a>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </nav>
+            <!-- Bottom Navbar -->
+            <nav class="bottom-navbar">
+                <div class="container">
+                    @if (isAuthenticated)
+                    {
+                        <ul class="nav page-navigation">
+                            <partial name="_TipsyBaboonNavMenu" />
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Help" title="Help Documentation">
+                                    <i class="bi bi-question-circle menu-icon"></i> <soan class="menu-title">Help</soan>
+                                </a>
+                            </li>
+                        </ul>
+                    }
+                    else
+                    {
+                        <ul class="nav page-navigation justify-content-center">
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/Login">
+                                    <i class="fas fa-sign-in-alt menu-icon"></i>
+                                    <span class="menu-title">Login</span>
+                                </a>
+                            </li>
+                            @if (uiConfig?.AllowRegistration ?? true)
+                            {
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="Identity" asp-page="/Account/Register">
+                                        <i class="fas fa-user-plus menu-icon"></i>
+                                        <span class="menu-title">Register</span>
+                                    </a>
+                                </li>
+                            }
+                            <li class="nav-item">
+                                <a class="nav-link" asp-area="Identity" asp-page="/Account/ForgotPassword">
+                                    <i class="fas fa-key menu-icon"></i>
+                                    <span class="menu-title">Forgot Password</span>
+                                </a>
+                            </li>
+                        </ul>
+                    }
+                </div>
+            </nav>
+        </div>
+        <!-- Main Panel -->
+        <div class="container-fluid page-body-wrapper">
+            <div class="main-panel">
+                <div class="content-wrapper">
+                    <main role="main">
+                        @RenderBody()
+                    </main>
+                </div>
+                <footer class="footer">
+                    <div class="container">
+                        &copy; 2026 - TipsyBaboonTestSite - <a asp-area="" asp-page="/Privacy">Privacy</a>
+                    </div>
+                </footer>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/jquery.min.js" asp-append-version="true"></script>
+    <script src="~/lib/jquery-ui/jquery-ui.min.js" asp-append-version="true"></script>
+    <script src="~/lib/masonry/masonry.pkgd.min.js" asp-append-version="true"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    @if (isAuthenticated)
+    {
+        <partial name="_TipsyBaboonScripts" />
+    }
+
+    @if (isImpersonating)
+    {
+        <script>
+            async function endImpersonation() {
+                try {
+                    const response = await fetch('/api/Governance/User/action/EndImpersonation', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    const result = await response.json();
+                    if (result.success) {
+                        window.location.reload();
+                    } else {
+                        alert(result.message || 'Failed to end impersonation');
+                    }
+                } catch (error) {
+                    console.error('End impersonation error:', error);
+                    alert('Failed to end impersonation');
+                }
+            }
+        </script>
+    }
+
+    <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

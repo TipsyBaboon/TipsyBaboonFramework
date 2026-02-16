@@ -1,0 +1,17 @@
+@model TipsyBaboon.UI.Models.FieldViewModel<TimeOnly?>
+@using TipsyBaboon.UI.Rendering
+
+@{
+    var name = Model.Column.PropertyName;
+    var elementId = Model.ElementId;
+    var inputName = Model.InputName;
+    string timeValue = "";
+    if (Model.Value.HasValue)
+    {
+        timeValue = Model.Value.Value.ToString("HH:mm");
+    }
+    var isReadOnly = ValidationHelper.IsReadOnly(Model.Column);
+    var validationAttrs = ValidationHelper.FormatValidationAttributes(Model.Column);
+}
+
+<input type="time" id="@elementId" name="@inputName" value="@timeValue" class="form-control" @(isReadOnly ? "readonly" : "") @Html.Raw(validationAttrs) @Html.Raw(Model.FieldContextAttribute) />

@@ -1,0 +1,13 @@
+@*
+    TipsyBaboon Layout Editor Assets
+    Auto-loads CSS and JavaScript for the layout editor.
+    Include this partial on any page using the layout editor.
+*@
+
+@* Layout Editor Styles *@
+<link rel="stylesheet" href="/_content/TipsyBaboon.UI/css/tipsybaboon-layout-editor.css" asp-append-version="true" />
+
+@* Layout Editor Scripts - loaded immediately after render *@
+@section Scripts {
+    <script src="@Html.CacheVersionUrl("/_content/TipsyBaboon.UI/js/tipsybaboon-layout-editor.js")"></script>
+}

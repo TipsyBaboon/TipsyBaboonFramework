@@ -1,0 +1,194 @@
+@page "/Governance/Layout/Detail/{id:guid}"
+@model TipsyBaboon.UI.Pages.Governance.Layout.DetailModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = $"Layout Editor - {Model.DisplayName} ({Model.LayoutName})";
+}
+
+<link rel="stylesheet" href="/_content/TipsyBaboon.UI/css/tipsybaboon-layout-editor.css" asp-append-version="true" />
+<script src="/_content/TipsyBaboon.UI/js/tipsybaboon-core-loader.js" asp-append-version="true"></script>
+
+<div class="container-fluid" id="layout-editor"
+     data-api-url="@Model.ApiUrl"
+     data-layout-id="@Model.LayoutId"
+     data-module="@Model.Module"
+     data-type="@Model.TypeName"
+     data-display-name="@Model.DisplayName">
+
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="d-inline-block mb-0">
+                <i class="bi bi-layout-text-sidebar-reverse me-2"></i>@Model.DisplayName — @Model.LayoutType Layout
+            </h4>
+        </div>
+        <div class="d-flex gap-2">
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Layout Canvas (9 columns) -->
+        <div class="col-9">
+            <!-- Column Ruler -->
+            <div class="column-ruler border-top border-bottom border-primary py-1 mb-2">
+                <div class="row text-center text-primary small">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        <div class="col-1 ruler-col">·</div>
+                    }
+                </div>
+            </div>
+
+            <!-- Sections Area -->
+            <div class="row layout-area" id="layout-canvas">
+                <div class="layout-loading text-center py-5 col-12">
+                    <div class="spinner-border text-secondary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2 text-muted">Loading layout...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toolbox (3 columns) -->
+        <div class="col-3">
+            <!-- Spacer to align with ruler -->
+            <div class="py-1 mb-4" style="border-top: 1px solid transparent; border-bottom: 1px solid transparent;">
+                <div class="small">&nbsp;</div>
+            </div>
+            <div class="card sticky-card" id="layout-toolbox">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <span class="h6 mb-0"><i class="bi bi-tools me-2"></i>Toolbox</span>
+                    <div class="toolbox-controls">
+                        <button type="button" class="btn btn-link p-0" id="btn-reset-layout-2" title="Reset to default">
+                            <i class="bi bi-arrow-counterclockwise"></i>
+                        </button>
+                        <button type="button" class="btn btn-link p-0 ms-2" id="btn-save-layout-2" title="Save layout">
+                            <i class="bi bi-floppy"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-2" style="max-height: calc(100vh - 10rem); overflow-y: auto;">
+                    <!-- Common Tools -->
+                    <div class="bg-primary rounded px-3 py-2 mb-4">
+                        <span class="h6 mb-0">Common Tools</span>
+                    </div>
+                    <div class="common-tools tool-area mb-3" id="common-tools">
+                        <div class="field-item new-field mb-4" data-tool-type="Spacer" draggable="true">
+                            <div class="card" style="min-height: 3rem; max-height: 3rem; height: 3rem;">
+                                <div class="d-flex" style="height: 100%;">
+                                    <div class="text-center d-flex align-items-center justify-content-center handle" style="cursor: grab; width: 2.5rem; min-width: 2.5rem;">
+                                        <i class="bi bi-grip-vertical"></i>
+                                    </div>
+                                    <div class="flex-fill card-body d-flex align-items-center">
+                                        <small class="field-label">Spacer</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-secondary w-100" id="btn-add-section">
+                            <i class="bi bi-plus-circle me-1"></i> Add Section
+                        </button>
+                    </div>
+
+                    <!-- Available Fields -->
+                    <div class="bg-primary rounded px-3 py-2 mb-4">
+                        <span class="h6 mb-0">Fields</span>
+                        <span class="ms-3" id="available-count">0</span>
+                    </div>
+                    <div class="entity-fields tool-area" id="available-fields-list">
+                    </div>
+                    <div id="no-fields-message" class="text-muted text-center py-3 d-none">
+                        <i class="bi bi-check-circle me-1"></i>
+                        All fields placed
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Section Settings Modal -->
+<div class="modal fade" id="section-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="section-modal-title">Section Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-8 mb-3">
+                        <label class="form-label">Display Text</label>
+                        <input type="text" class="form-control" id="section-title-input" placeholder="Section Title" />
+                    </div>
+                    <div class="col-4 mb-3">
+                        <label class="form-label">Size</label>
+                        <select class="form-select" id="section-column-size">
+                            @for (int i = 1; i <= 12; i++)
+                            {
+                                if (i == 12)
+                                {
+                                    <option value="@i" selected>@i</option>
+                                }
+                                else
+                                {
+                                    <option value="@i">@i</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Field Settings Modal -->
+<div class="modal fade" id="field-settings-modal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="field-modal-title">Field Settings</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-8 mb-3">
+                        <label class="form-label">Display Name</label>
+                        <input type="text" class="form-control" id="field-display-name" disabled />
+                    </div>
+                    <div class="col-4 mb-3">
+                        <label class="form-label">Size</label>
+                        <select class="form-select" id="field-column-size">
+                            @for (int i = 1; i <= 12; i++)
+                            {
+                                <option value="@i">@i</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="field-show-label" checked />
+                    <label class="form-check-label" for="field-show-label">Show Label</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+    (async function() {
+        var loader = TipsyBaboon.Loader;
+        await loader.EnsureCoreDependencies();
+        await loader.EnsureTipsyBaboonLib('common');
+        await loader.EnsureTipsyBaboonLib('layoutEditor');
+    })();
+    </script>
+}

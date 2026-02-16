@@ -1,0 +1,55 @@
+@model TipsyBaboon.UI.Models.ModalModel
+@{
+    var modalId = Model.ModalId ?? $"modal_{Guid.NewGuid():N}";
+    var size = Model.Size switch
+    {
+        "sm" => "",
+        "lg" => "modal-lg",
+        "xl" => "modal-xl",
+        _ => ""
+    };
+    var scrollable = Model.Scrollable ? "modal-dialog-scrollable" : "";
+}
+
+<div class="modal fade" id="@modalId" tabindex="-1" aria-labelledby="@(modalId)_label" aria-hidden="true" data-entity="@Model.EntityName">
+    <div class="modal-dialog @size @scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="@(modalId)_label">@Model.Title</h5>
+                <div class="d-flex align-items-center gap-2">
+                    @if (Model.ShowNewWindowLink)
+                    {
+                        <a href="#" id="@(modalId)_newWindow" class="btn btn-link" title="Open in new window" target="_blank">
+                            <i class="bi bi-box-arrow-up-right"></i>
+                        </a>
+                    }
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+            </div>
+            <div class="modal-body" id="@(modalId)_content">
+                @if (!string.IsNullOrEmpty(Model.ContentUrl))
+                {
+                    <div class="text-center py-4">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    @Model.Content
+                }
+            </div>
+            <div class="modal-footer">
+                @if (Model.ShowCloseButton)
+                {
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">@Model.CloseButtonText</button>
+                }
+                @if (Model.ShowSaveButton)
+                {
+                    <button type="button" class="btn btn-primary" id="@(modalId)_save">@Model.SaveButtonText</button>
+                }
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,41 @@
+/// <references path="../extenders/palettes.scss' />
+@use '../extenders/palettes' as *;
+@use '../variables/colors' as *;
+
+// =============================================================================
+// Form Elements - Inverted (fg-0 background, bg-0 color)
+// =============================================================================
+
+input[type="text"],
+input[type="password"],
+input[type="email"],
+input[type="number"],
+input[type="tel"],
+input[type="url"],
+input[type="search"],
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"],
+textarea,
+select,
+.form-control {
+    background-color: map-get($colors, 'bg-0');
+    color: map-get($colors, 'fg-0');
+    border: 1px solid map-get($colors, 'secondary');
+
+    &:focus {
+        background-color: map-get($colors, 'bg-0');
+        color: map-get($colors, 'fg-0');
+        border-color: map-get($colors, 'secondary');
+    }
+
+    &::placeholder {
+        color: rgba(map-get($colors, 'fg-3'), 0.5);
+    }
+
+    &:disabled, &:read-only {
+        background-color: map-get($colors, 'bg-3');
+        color: map-get($colors, 'fg-2');
+        border: 1px solid map-get($colors, 'secondary');
+    }
+}

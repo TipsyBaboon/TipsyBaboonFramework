@@ -1,0 +1,129 @@
+@model TipsyBaboon.UI.Pages.Generic.CreateModel
+@using TipsyBaboon.UI.Rendering
+@using TipsyBaboon.Core
+@using TipsyBaboon.Core.Interfaces
+@using TipsyBaboon.Core.Models
+@using System.Text.Json
+@{
+    var keyPropertyNames = Model.Schema!.KeyColumns.Select(k => k.PropertyName).ToArray();
+    var keyPropertiesJson = JsonSerializer.Serialize(keyPropertyNames);
+}
+
+<div id="@Model.FormId" record-form data-api-prefix="@Model.ApiPrefix" data-is-create="true" data-auto-save="false" data-save-orchestrator data-module="@Model.Module" data-model="@Model.TypeName" data-record-keys='{}' data-key-properties='@keyPropertiesJson'>
+    @* Hidden fields for key columns (e.g., Guid Id, Int32 SupplierId) *@
+    @foreach (var keyColumn in Model.Schema!.KeyColumns)
+    {
+        <input type="hidden" name="@keyColumn.PropertyName" value="@Model.EntityId" />
+    }
+    
+    @* Hidden passthrough fields for querystring parameters not shown in UI *@
+    @foreach (var lockedField in Model.LockedFields)
+    {
+        var column = Model.Schema!.Columns.FirstOrDefault(c => c.PropertyName.Equals(lockedField.Key, StringComparison.OrdinalIgnoreCase));
+        var isInForm = column != null && column.ShowInForm && !IsCollectionType(column.ClrType);
+        
+        @if (!isInForm)
+        {
+            <input type="hidden" name="@lockedField.Key" value="@lockedField.Value" data-locked="true" />
+        }
+    }
+    
+    <div class="row">
+        @foreach (var layoutSection in Model.Schema!.Layout)
+        {
+            @if (!layoutSection.Properties.Any(p => {
+                var column = Model.Schema.Columns.FirstOrDefault(c => c.PropertyName == p.PropertyName);
+                return column != null && column.ShowInForm && !IsCollectionType(column.ClrType);
+            }))
+            {
+                continue;
+            }
+            
+            <div class="col-md-@layoutSection.ColumnSize mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0">@layoutSection.Title</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var layoutProp in layoutSection.Properties)
+                            {
+                                var column = Model.Schema.Columns.FirstOrDefault(c => c.PropertyName == layoutProp.PropertyName);
+                                @if (column != null && column.ShowInForm)
+                                {
+                                    var scaledSize = (layoutProp.ColumnSize * 12) / layoutSection.ColumnSize;
+                                    
+                                    <div class="col-md-@scaledSize mb-3">
+                                        @if (column.ShowLabel)
+                                        {
+                                            <label class="form-label fw-semibold">
+                                                @column.DisplayName
+                                                @if (column.IsRequired)
+                                                {
+                                                    <span class="text-danger">*</span>
+                                                }
+                                            </label>
+                                        }
+                                        @FieldRenderer.RenderField(Html, Model.Schema, column, Model.Entity, Model.FormId)
+                                        @if (!string.IsNullOrEmpty(column.Description))
+                                        {
+                                            <small class="form-text text-muted">@column.Description</small>
+                                        }
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    
+    @if (!Model.IsModal)
+    {
+        var entityModel = Model.Entity as TipsyBaboonModel;
+        var defaultLevel = Model.OwnershipLevels.Count > 0 ? Model.OwnershipLevels.Max() : OwnershipLevel.Public;
+        <div class="d-flex justify-content-between align-items-end gap-2 mt-3">
+            <div>
+                @{
+                    var privacyModel = new TipsyBaboon.UI.Models.PrivacySelectorModel
+                    {
+                        HasOwnership = Model.HasOwnership,
+                        OwnershipLevels = Model.OwnershipLevels,
+                        IsOwner = true,
+                        IsCreate = true,
+                        CurrentLevel = defaultLevel,
+                        CurrentGroupId = entityModel?.GroupId,
+                        CurrentGroupName = Model.CurrentGroupName,
+                        UserGroups = Model.UserGroups,
+                        IsReadOnly = false,
+                        OwnerDisplayName = Model.OwnerDisplayName,
+                        OwnerId = Model.CurrentUserId
+                    };
+                }
+                @await Html.PartialAsync("_PrivacySelector", privacyModel)
+            </div>
+            <div>
+                <button type="button" class="btn btn-primary btn-save" disabled>
+                    <i class="bi bi-floppy me-1"></i> Create
+                </button>
+            </div>
+        </div>
+    }
+    else if (Model.HasOwnership)
+    {
+        var entityModelModal = Model.Entity as TipsyBaboonModel;
+        var defaultLevelModal = Model.OwnershipLevels.Count > 0 ? Model.OwnershipLevels.Max() : OwnershipLevel.Public;
+        <input type="hidden" name="OwnershipLevel" value="@((int)defaultLevelModal)" data-privacy-level-hidden />
+    }
+</div>
+
+@functions {
+    bool IsCollectionType(Type type)
+    {
+        if (type == typeof(string)) return false;
+        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
+        return underlyingType.IsArray ||
+               (underlyingType.IsGenericType && typeof(System.Collections.IEnumerable).IsAssignableFrom(underlyingType) && underlyingType != typeof(string));
+    }
+}

@@ -1,0 +1,380 @@
+// =============================================================================
+// Topbar - Top Navigation Bar (Self-Contained)
+// =============================================================================
+// Top navigation bar styling for horizontal menu layout.
+
+@use '../variables/colors' as *;
+
+// -----------------------------------------------------------------------------
+// Top Navbar
+// -----------------------------------------------------------------------------
+
+.horizontal-menu .top-navbar {
+  font-weight: 400;
+  border-bottom: 1px solid map-get($colors, 'bg-3');
+  
+  // Mobile: use primary gradient background like bottom navbar
+  @media (max-width: 991px) {
+    background-color: map-get($colors, 'primary');
+    background-image: linear-gradient(to bottom, map-get($colors, 'primary-dark'), map-get($colors, 'primary'));
+    color: map-get($colors, 'fg-0');
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+  }
+  
+  // Brand Wrapper
+  .navbar-brand-wrapper {
+    width: auto;
+    height: 78px;
+    
+    .navbar-brand {
+      color: map-get($colors, 'bg-0');
+      font-size: 1.5rem;
+      line-height: 48px;
+      margin-right: 0;
+      padding: 0.25rem 0;
+      text-align: left;
+      
+      // Light text on mobile
+      @media (max-width: 991px) {
+        color: map-get($colors, 'fg-0');
+      }
+      
+      &:active,
+      &:focus,
+      &:hover {
+        color: map-get($colors, 'primary');
+        
+        @media (max-width: 991px) {
+          color: map-get($colors, 'info-bright');
+        }
+      }
+      
+      img {
+        max-width: 100%;
+        height: 70px;
+        margin: auto;
+        vertical-align: middle;
+        
+        @media (max-width: 767px) {
+          transform: translateX(-15px);
+        }
+      }
+      
+      // Mini logo variant
+      &.brand-logo-mini {
+        display: none;
+        padding-left: 0;
+        text-align: center;
+        
+        img {
+          max-height: 60px;
+          margin: auto;
+        }
+      }
+      
+      @media (max-width: 991px) {
+        width: 55px;
+        
+        &.brand-logo {
+          display: none;
+        }
+        
+        &.brand-logo-mini {
+          display: block;
+          padding-top: 0;
+        }
+      }
+    }
+  }
+  
+  // Sub-Brand - Logo Tagline/Sub-text Styling
+  // Styling for sub-brand text displayed next to the main logo.
+  // Uses Caveat font from Google Fonts for handwritten appearance.
+  .sub-brand {
+    font-family: 'Caveat', cursive;
+    font-size: 2.33rem;
+    font-weight: 900;
+    color: map-get($colors, 'info-bright');
+    white-space: nowrap;
+    margin-left: 0.5rem;
+    display: inline-block;
+    vertical-align: middle;
+    letter-spacing: 1.25px;
+    transform: translateY(-6px);
+    
+    // Responsive scaling
+    @media (max-width: 576px) {
+      font-size: 2rem;
+      margin-left: 0.25rem;
+    }
+
+    // Optional: Add subtle styling variations
+    &.light {
+      color: map-get($colors, 'info-bright');
+    }
+
+    &.accent {
+      color: #ff6b6b;
+    }
+  }
+
+  // Combine logo and sub-brand in a flex container
+  .logo-with-sub-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    @media (max-width: 576px) {
+      gap: 0.25rem;
+    }
+  }
+  
+  // Menu Wrapper
+  .navbar-menu-wrapper {
+    color: map-get($colors, 'bg-0');
+    width: auto;
+    height: 78px;
+    flex-grow: 1;
+    
+    // Light text on mobile
+    @media (max-width: 991px) {
+      color: map-get($colors, 'fg-0');
+    }
+    
+    @media (max-width: 991px) {
+      
+      padding-left: 1.25rem;
+      padding-right: 1.25rem;
+    }
+    
+    // Toggler
+    .navbar-toggler {
+      border: 0;
+      color: inherit;
+      font-size: 1.5rem;
+      
+      &:not(.navbar-toggler-right) {
+        @media (max-width: 991px) {
+          display: none;
+        }
+      }
+      
+      &.navbar-toggler-right {
+        @media (max-width: 991px) {
+          padding-left: 1.25rem;
+          padding-right: 11px;
+        }
+      }
+    }
+    
+    // Navigation Items
+    .navbar-nav {
+      display: flex;
+      align-items: center;
+      flex-direction: row;
+      
+      .nav-item {
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+        
+        .nav-link {
+          color: map-get($colors, 'bg-0');
+          font-size: 1rem;
+          
+          // Light text on mobile
+          @media (max-width: 991px) {
+            color: map-get($colors, 'fg-0');
+          }
+          
+          &:hover {
+            color: map-get($colors, 'primary');
+            
+            @media (max-width: 991px) {
+              color: map-get($colors, 'info-bright');
+            }
+          }
+          
+          &.horizontal-nav-left-menu {
+            color: map-get($colors, 'primary');
+            font-size: 1.5rem;
+          }
+        }
+      }
+    }
+
+    // Centered search: nudge icon so it visually centers with input
+    // Compensate for border width so the outside of the input-group-text border
+    // lines up with the input content area (use calc to subtract the border width)
+    .nav-search-center {
+      .input-group {
+        .input-group-text {
+          padding: 0.875rem calc(1.375rem - 1px);
+
+          i {
+            display: inline-block;
+            transform: translateY(1px);
+          }
+        }
+      }
+    }
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Profile Navigation
+// -----------------------------------------------------------------------------
+
+.nav-item.nav-profile {
+    margin-left: 2rem;
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    @media (max-width: 991px) {
+        margin-left: 0.5rem;
+    }
+    // Online status indicator
+    .online-status {
+        width: 8px;
+        height: 8px;
+        border: solid 1px white;
+        background-color: map-get($colors, 'success');
+        border-radius: 50%;
+        position: absolute;
+        top: 1.25rem;
+        right: 18px;
+
+        @media (max-width: 991px) {
+            display: none;
+        }
+    }
+    // Profile image
+    img {
+        width: 30px;
+        height: 30px;
+        border-radius: 0.25rem;
+        box-shadow: 4px 5px 6px 0 rgba(0, 0, 0, 0);
+    }
+    // Profile name
+    .nav-profile-name {
+        color: map-get($colors, 'bg-0');
+        font-weight: 600;
+        margin-right: 0.5rem;
+
+        @media (max-width: 767px) {
+            display: none;
+        }
+    }
+    // Dropdown alignment & palette
+    &.dropdown {
+        // Align dropdown's right edge to the profile item
+        .dropdown-menu {
+            right: 0 !important;
+            left: auto !important;
+            margin-top: 0 !important;
+            border-top-left-radius: 0.25rem;
+            border-top-right-radius: 0;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, .08);
+        }
+        // Default closed state: icon uses light text
+        .nav-link {
+            --bs-nav-link-color: #{map-get($colors, 'fg-0')};
+            --bs-nav-link-hover-color: #{map-get($colors, 'success')};
+
+            &::after {
+                color: map-get($colors, 'fg-0');
+            }
+        }
+        // Open state: attach and use success palette
+        // Consistent sizing for toggle button
+        #profileDropdown {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 0.75rem;
+            min-width: auto;
+            height: auto;
+            box-sizing: border-box;
+            background-color: transparent;
+            border-radius: 0.25rem;
+            color: map-get($colors, 'fg-0');
+
+            i {
+                color: inherit;
+                font-size: 1.5rem;
+                line-height: 1;
+            }
+        }
+            // Use the toggle's aria-expanded for open state
+            #profileDropdown[aria-expanded="true"] {
+                background-color: map-get($colors, 'success') !important;
+                color: map-get($colors, 'fg-0') !important;
+                border-top-left-radius: 0.25rem;
+                border-top-right-radius: 0.25rem;
+                border-bottom-left-radius: 0;
+                border-bottom-right-radius: 0;
+                z-index: 1030;
+
+                i {
+                    color: map-get($colors, 'fg-0') !important;
+                }
+            }
+        // Some bootstrap versions add the .show class to the parent .dropdown; cover that case too
+        &.show, &.open {
+            .navbar-dropdown,
+            .dropdown-menu {
+                background-color: map-get($colors, 'bg-2');
+                color: map-get($colors, 'fg-0');
+                border-top-left-radius: 0.25rem;
+                border-top-right-radius: 0;
+                border-bottom-left-radius: 0.25rem;
+                border-bottom-right-radius: 0.25rem;
+                margin-top: 0;
+                box-shadow: none;
+                right: 0;
+                left: auto;
+                
+
+                .dropdown-item {
+                    color: map-get($colors, 'fg-0');
+                    padding: .75rem 1.5rem;
+
+                    &:hover {
+                        background-color: rgba(map-get($colors, 'success'), .08);
+                        color: map-get($colors, 'fg-0');
+                    }
+                }
+            }
+        }
+
+        .dropdown-menu.show,
+        .navbar-dropdown.show {
+            background-color: map-get($colors, 'bg-2');
+            color: map-get($colors, 'fg-0');
+            border-top-left-radius: 0.25rem;
+            border-top-right-radius: 0;
+            border-bottom-left-radius: 0.25rem;
+            border-bottom-right-radius: 0.25rem;
+            // ensure dropdown sits just under toggle
+            margin-top: 0;
+            box-shadow: none;
+            right: 0;
+            left: auto;
+            position: absolute !important;
+      
+            // item styles
+            .dropdown-item {
+                color: map-get($colors, 'fg-0');
+                padding: .75rem 1.5rem;
+
+                &:hover {
+                    background-color: rgba(map-get($colors, 'bg-3'), .08);
+                    color: map-get($colors, 'fg-0');
+                }
+            }
+        }
+    }
+}

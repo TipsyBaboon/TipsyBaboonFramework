@@ -1,0 +1,116 @@
+@page "/Governance/Configuration"
+@model TipsyBaboon.UI.Pages.Governance.Configuration.IndexModel
+@using TipsyBaboon.UI.Rendering
+@using TipsyBaboon.Core
+@{
+    ViewData["Title"] = "Configuration";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3">
+            <div class="p-4">
+                <!-- Spacer to align with h2 title height -->
+                <h2 class="mb-4">&nbsp;</h2>
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Configuration</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="list-group list-group-flush">
+                            @foreach (var configType in Model.ConfigurationTypes)
+                            {
+                                var displayName = configType.Name.Replace("Configuration", "");
+                                var isActive = Model.SelectedTypeName == configType.Name ? "active" : "";
+                                <a href="/Governance/Configuration?type=@configType.Name" class="list-group-item list-group-item-action @isActive">
+                                    <i class="bi bi-gear me-2"></i>
+                                    @displayName
+                                </a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="col-md-9">
+            <div class="p-4">
+                @if (!string.IsNullOrEmpty(Model.SelectedTypeName))
+                {
+                    <h2 class="mb-4">@Model.SelectedTypeName.Replace("Configuration", "") Settings</h2>
+
+                    @if (Model.ConfigurationSchema != null && Model.ConfigurationSchema.Columns.Any())
+                    {
+                        <form id="configForm">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" id="selectedType" value="@Model.SelectedTypeName" />
+                            
+                            @foreach (var layoutSection in Model.ConfigurationSchema.Layout)
+                            {
+                                <div class="card mb-4">
+                                    <div class="card-header">
+                                        <h5 class="mb-0">@layoutSection.Title</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        @foreach (var layoutProp in layoutSection.Properties)
+                                        {
+                                            var column = Model.ConfigurationSchema.Columns.FirstOrDefault(c => c.PropertyName == layoutProp.PropertyName);
+                                            if (column != null && column.ShowInForm)
+                                            {
+                                                <div class="mb-3 config-property" data-property="@column.PropertyName">
+                                                    @if (layoutProp.ShowLabel)
+                                                    {
+                                                        <label class="form-label fw-semibold">
+                                                            @column.DisplayName
+                                                            @if (!string.IsNullOrEmpty(column.Description))
+                                                            {
+                                                                <i class="bi bi-info-circle text-muted ms-1" 
+                                                                   data-bs-toggle="tooltip" 
+                                                                   title="@column.Description"></i>
+                                                            }
+                                                        </label>
+                                                    }
+                                                    @FieldRenderer.RenderField(Html, Model.ConfigurationSchema, column, Model.ConfigurationValues, "configForm")
+                                                    <div class="save-status mt-1 small text-muted" data-property="@column.PropertyName" style="display: none;">
+                                                        <span class="spinner-border" role="status" aria-hidden="true"></span> Saving...
+                                                    </div>
+                                                </div>
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </form>
+                    }
+                    else
+                    {
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            No configuration properties found for this module.
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center text-muted mt-5">
+                        <i class="bi bi-gear" style="font-size: 3rem;"></i>
+                        <p class="mt-3">Select a configuration module from the sidebar to get started.</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="/_tipsybaboon/js/tipsybaboon-config.js"></script>
+    <script>
+        TipsyBaboon.Config.Init({
+            formSelector: '#configForm',
+            saveUrl: '/Governance/Configuration?handler=Save'
+        });
+    </script>
+}

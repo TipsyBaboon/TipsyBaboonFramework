@@ -1,0 +1,95 @@
+@page
+@model TipsyBaboon.UI.Areas.Identity.Pages.Account.LoginModel
+
+@{
+    ViewData["Title"] = "Log in";
+    Layout = Model.LayoutPage;
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">Log in</h2>
+                </div>
+                <div class="card-body">
+                    <form id="account" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3" role="alert"></div>
+                        <div class="mb-3">
+                            <label asp-for="Input.Email" class="form-label">Email</label>
+                            <input asp-for="Input.Email" class="form-control bg-light text-dark" autocomplete="username" aria-required="true" />
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+                        <div class="mb-3">
+                            <label asp-for="Input.Password" class="form-label">Password</label>
+                            <input asp-for="Input.Password" class="form-control bg-light text-dark" autocomplete="current-password" aria-required="true" />
+                            <span asp-validation-for="Input.Password" class="text-danger"></span>
+                        </div>
+                        <div class="form-check mb-3">
+                            <input class="form-check-input" asp-for="Input.RememberMe" />
+                            <label class="form-check-label" asp-for="Input.RememberMe">
+                                @Html.DisplayNameFor(m => m.Input.RememberMe)
+                            </label>
+                        </div>
+                        <button id="login-submit" type="submit" class="btn btn-lg btn-primary px-5">Log in</button>
+                    </form>
+                    @if ((Model.ExternalLogins?.Count ?? 0) > 0)
+                    {
+                        <div class="text-center my-4">
+                            <span class="text-muted">or continue with</span>
+                        </div>
+                        <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+                            <div class="d-flex flex-column align-items-center gap-2">
+                                @foreach (var provider in Model.ExternalLogins!)
+                                {
+                                    var btnClass = "btn";
+                                    var iconClass = "";
+                                    
+                                    if (provider.Name.ToLower().Contains("google"))
+                                    {
+                                        btnClass = "btn btn-outline-danger";
+                                        iconClass = "bi bi-google";
+                                    }
+                                    else if (provider.Name.ToLower().Contains("github"))
+                                    {
+                                        btnClass = "btn btn-dark";
+                                        iconClass = "bi bi-github";
+                                    }
+                                    else if (provider.Name.ToLower().Contains("microsoft"))
+                                    {
+                                        btnClass = "btn btn-primary";
+                                        iconClass = "bi bi-microsoft";
+                                    }
+                                    else if (provider.Name.ToLower().Contains("facebook"))
+                                    {
+                                        btnClass = "btn btn-primary";
+                                        iconClass = "bi bi-facebook";
+                                    }
+                                    else
+                                    {
+                                        btnClass = "btn btn-outline-secondary";
+                                        iconClass = "bi bi-box-arrow-in-right";
+                                    }
+                                    
+                                    <button type="submit" class="@btnClass" style="width: 33%;" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">
+                                        @if (!string.IsNullOrEmpty(iconClass))
+                                        {
+                                            <i class="@iconClass me-2"></i>
+                                        }
+                                        @provider.DisplayName
+                                    </button>
+                                }
+                            </div>
+                        </form>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

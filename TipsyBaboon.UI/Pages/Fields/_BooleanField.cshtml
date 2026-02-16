@@ -1,0 +1,37 @@
+@model TipsyBaboon.UI.Models.FieldViewModel<bool>
+@using TipsyBaboon.UI.Rendering
+
+@{
+    var name = Model.Column.PropertyName;
+    var elementId = Model.ElementId;
+    var inputName = Model.InputName;
+    var isChecked = Model.Value;
+    var isReadOnly = ValidationHelper.IsReadOnly(Model.Column);
+    var validationAttrs = ValidationHelper.FormatValidationAttributes(Model.Column);
+    var isGridContext = Model.IsGridContext;
+    var controlName = Model.Column.ControlName;
+    var usePlainCheckbox = !string.IsNullOrEmpty(controlName) && controlName.Equals("checkbox", StringComparison.OrdinalIgnoreCase);
+}
+
+@if (usePlainCheckbox)
+{
+    @* Plain checkbox via [FieldControl("checkbox")] opt-out *@
+    <div class="form-check @(isGridContext ? "d-inline-block" : "")">
+        <input type="checkbox" id="@elementId" name="@inputName" value="true" class="form-check-input" @(isChecked ? "checked" : "") @(isReadOnly ? "disabled" : "") @Html.Raw(validationAttrs) @Html.Raw(Model.FieldContextAttribute) />
+        @if (!isGridContext)
+        {
+            <label class="form-check-label">@(Model.Column.DisplayName ?? name)</label>
+        }
+    </div>
+}
+else
+{
+    @* Default: Bootstrap toggle switch *@
+    <div class="form-check form-switch @(isGridContext ? "d-inline-block" : "")">
+        <input type="checkbox" id="@elementId" name="@inputName" value="true" class="form-check-input" @(isChecked ? "checked" : "") @(isReadOnly ? "disabled" : "") @Html.Raw(validationAttrs) @Html.Raw(Model.FieldContextAttribute) />
+        @if (!isGridContext)
+        {
+            <label class="form-check-label">@(Model.Column.DisplayName ?? name)</label>
+        }
+    </div>
+}

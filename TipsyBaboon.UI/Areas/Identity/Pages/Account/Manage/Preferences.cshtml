@@ -1,0 +1,111 @@
+@page
+@model PreferencesModel
+@using TipsyBaboon.UI.Rendering
+@{
+    ViewData["Title"] = "Preferences";
+    ViewData["ActivePage"] = ManageNavPages.Preferences;
+    Layout = Model.LayoutPage;
+    var hasMultipleTypes = Model.PreferenceTypes.Count > 1;
+    var contentColClass = hasMultipleTypes ? "col-md-9" : "col-md-8";
+}
+
+<h3>@ViewData["Title"]</h3>
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<div class="row">
+    @if (hasMultipleTypes)
+    {
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Categories</h5>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        @foreach (var prefType in Model.PreferenceTypes)
+                        {
+                            var displayName = prefType.Name.Replace("UserPreferences", "").Replace("Preferences", "");
+                            if (string.IsNullOrEmpty(displayName)) displayName = "General";
+                            var isActive = Model.SelectedTypeName == prefType.Name ? "active" : "";
+                            <a href="/Identity/Account/Manage/Preferences?type=@prefType.Name" class="list-group-item list-group-item-action @isActive">
+                                <i class="bi bi-sliders me-2"></i>
+                                @displayName
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <div class="@contentColClass">
+        @if (!string.IsNullOrEmpty(Model.SelectedTypeName) && Model.PreferenceSchema != null)
+        {
+            <form id="preferencesForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" id="selectedType" value="@Model.SelectedTypeName" />
+                
+                @foreach (var layoutSection in Model.PreferenceSchema.Layout)
+                {
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="mb-0">@layoutSection.Title</h5>
+                        </div>
+                        <div class="card-body">
+                            @foreach (var layoutProp in layoutSection.Properties)
+                            {
+                                var column = Model.PreferenceSchema.Columns.FirstOrDefault(c => c.PropertyName == layoutProp.PropertyName);
+                                if (column != null && column.ShowInForm)
+                                {
+                                    <div class="mb-3 config-property" data-property="@column.PropertyName">
+                                        @if (layoutProp.ShowLabel)
+                                        {
+                                            <label class="form-label fw-semibold">
+                                                @column.DisplayName
+                                                @if (!string.IsNullOrEmpty(column.Description))
+                                                {
+                                                    <i class="bi bi-info-circle text-muted ms-1" 
+                                                       data-bs-toggle="tooltip" 
+                                                       title="@column.Description"></i>
+                                                }
+                                            </label>
+                                        }
+                                        @FieldRenderer.RenderField(Html, Model.PreferenceSchema, column, Model.PreferenceValues, "preferencesForm")
+                                        <div class="save-status mt-1 small text-muted" data-property="@column.PropertyName" style="display: none;">
+                                            <span class="spinner-border" role="status" aria-hidden="true"></span> Saving...
+                                        </div>
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                }
+            </form>
+        }
+        else if (Model.PreferenceTypes.Count == 0)
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                No preference settings are available.
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle me-2"></i>
+                Select a category from the sidebar.
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts
+{
+    <script src="/_tipsybaboon/js/tipsybaboon-config.js"></script>
+    <script>
+        TipsyBaboon.Config.Init({
+            formSelector: '#preferencesForm',
+            saveUrl: '/Identity/Account/Manage/Preferences?handler=Save'
+        });
+    </script>
+}

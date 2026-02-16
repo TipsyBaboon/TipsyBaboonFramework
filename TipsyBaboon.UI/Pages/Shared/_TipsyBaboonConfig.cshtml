@@ -1,0 +1,12 @@
+@using TipsyBaboon.UI.Configuration
+<script>
+(function (global) {
+    'use strict';
+    global.TipsyBaboon = global.TipsyBaboon || {};
+    global.TipsyBaboon.UI = global.TipsyBaboon.UI || {};
+    global.TipsyBaboon.UI.Config = {
+        AutoSave: @TipsyBaboonUIOptions.AutoSave.ToString().ToLower(),
+        ApiRoutePrefix: '@TipsyBaboonUIOptions.ApiRoutePrefix'
+    };
+})(window);
+</script>

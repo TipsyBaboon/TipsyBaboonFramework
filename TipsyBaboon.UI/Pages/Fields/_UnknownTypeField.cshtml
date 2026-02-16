@@ -1,0 +1,14 @@
+@model TipsyBaboon.UI.Models.FieldViewModel<object>
+@using TipsyBaboon.UI.Rendering
+
+@{
+    var name = Model.Column.PropertyName;
+    var elementId = $"{Model.FormId}-{name}";
+    var displayValue = Model.Column.ClrType?.Name ?? "Unknown";
+    if (Model.Value != null)
+    {
+        displayValue = $"{displayValue}: {Model.Value}";
+    }
+}
+
+<div class="form-control bg-light text-muted" id="@elementId">@displayValue</div>

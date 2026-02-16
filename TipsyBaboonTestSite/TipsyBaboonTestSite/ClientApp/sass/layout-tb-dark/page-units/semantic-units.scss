@@ -1,0 +1,123 @@
+/// <references path="../extenders/palettes.scss' />
+@use '../extenders/palettes' as *;
+@use '../variables/colors' as *;
+
+
+@each $color in $paletteTypes {
+    .btn-#{$color} {
+        @extend .palette-#{$color}-clickable;
+        border: 1px solid map-get($colors, '#{$color}-dark');
+    }
+
+        .btn-#{$color}:hover {
+            @extend .palette-#{$color}-hover;
+            border: 1px solid map-get($colors, '#{$color}-dark');
+        }
+
+        .btn-#{$color}.active {
+            @extend .palette-#{$color}-bright;
+            border: 1px solid map-get($colors, '#{$color}-dark');
+        }
+
+        .btn-#{$color}:disabled {
+            @extend .palette-#{$color}-disabled;
+            border: 1px solid map-get($colors, '#{$color}-dark');
+        }
+
+        .btn-#{$color}-outline {
+            @extend .palette-#{$color}-outline;
+        }
+
+            .btn-#{$color}-outline:hover {
+                @extend .palette-#{$color};
+                border: 1px solid map-get($colors, '#{$color}-dark');
+            }
+        .btn-#{$color}.active {
+            @extend .palette-#{$color}-bright;
+            border: 1px solid map-get($colors, '#{$color}-dark');
+        }
+
+        .btn-#{$color}-outline:disabled {
+            @extend .palette-#{$color}-outline-disabled;
+        }
+}
+
+$nonclickable-components: ('badge', 'pill');
+
+@each $component in $nonclickable-components {
+    @each $color in $paletteTypes {
+        .#{$component}-#{$color} {
+            @extend .palette-#{$color}-gradient;
+        }
+
+        .#{$component}-#{$color}-outline {
+            @extend .palette-#{$color}-outline;
+        }
+
+        .color-#{$color} {
+            color: map-get($colors, $color);
+        }
+
+        .bg-#{$color} {
+            background-color: map-get($colors, $color);
+        }
+    }
+}
+
+
+
+@each $color in $paletteTypes {
+    .text-#{$color} {
+        color: map-get($colors, $color) !important;
+    }
+
+    .bg-#{$color} {
+        background-color: map-get($colors, $color) !important;
+    }
+    
+}
+// =============================================================================
+// Alerts - Transparent Backgrounds
+// =============================================================================
+
+@each $color in $paletteTypes {
+    .alert-#{$color} {
+        background-color: rgba(map-get($colors, $color), 0.15);
+        color: map-get($colors, '#{$color}-bright');
+        border: 1px solid rgba(map-get($colors, $color), 0.3);
+    }
+}
+
+
+@each $color in $paletteTypes {
+    .link-#{$color} {
+        color: map-get($colors, $color);
+        font-weight: bold;
+        
+        &:hover {
+            color: map-get($colors, '#{$color}-bright');
+        }
+    }
+}
+
+
+// =============================================================================
+// Link Buttons - Default styling without color classes
+// =============================================================================
+
+.btn-link {
+    color: map-get($colors, 'fg-0') !important;
+    font-weight: bold !important;
+    text-decoration: none !important;
+    
+    &:hover {
+        color: map-get($colors, 'fg-0') !important;
+        text-decoration: none !important;
+        opacity: 0.8;
+    }
+    
+    &:focus {
+        box-shadow: 0 0 0 0.25rem rgba(map-get($colors, 'fg-0'), 0.25);
+    }
+}
+

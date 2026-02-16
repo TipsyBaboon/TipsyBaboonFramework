@@ -1,0 +1,52 @@
+@page "{statusCode:int?}"
+@model ErrorModel
+@{
+    ViewData["Title"] = Model.ErrorTitle;
+}
+
+<div class="container py-5">
+    <div class="text-center mb-4">
+        <h1 class="display-2 text-warning fw-bold mb-3">You must have had one too many!</h1>
+        <img src="~/images/tipsy-baboon.png" alt="Tipsy Baboon" class="img-fluid mb-4" style="max-width: 400px;" />
+    </div>
+
+    <div class="text-center mb-5">
+        <h2 class="text-danger mb-3">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+            @Model.ErrorTitle (@Model.StatusCode)
+        </h2>
+        <p class="lead text-muted">@Model.ErrorMessage</p>
+    </div>
+
+    @if (!string.IsNullOrEmpty(Model.ErrorDetails))
+    {
+        <div class="card border-warning mb-4">
+            <div class="card-header bg-warning bg-opacity-10">
+                <h5 class="mb-0"><i class="bi bi-info-circle me-2"></i>Details</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">@Model.ErrorDetails</p>
+            </div>
+        </div>
+    }
+
+    @if (Model.ShowRequestId)
+    {
+        <div class="card border-secondary mb-4">
+            <div class="card-body text-center">
+                <p class="text-muted mb-0">
+                    <small><strong>Request ID:</strong> <code>@Model.RequestId</code></small>
+                </p>
+            </div>
+        </div>
+    }
+
+    <div class="text-center">
+        <a href="/" class="btn btn-primary btn-lg me-2">
+            <i class="bi bi-house-fill me-2"></i>Go Home
+        </a>
+        <button onclick="window.history.back()" class="btn btn-secondary btn-lg">
+            <i class="bi bi-arrow-left me-2"></i>Go Back
+        </button>
+    </div>
+</div>

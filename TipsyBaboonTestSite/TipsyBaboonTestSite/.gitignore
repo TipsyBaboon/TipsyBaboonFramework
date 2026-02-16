@@ -1,0 +1,20 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build outputs (generated from ClientApp/sass and node_modules)
+wwwroot/css/style.css
+wwwroot/css/maps/
+wwwroot/lib/jquery/
+wwwroot/lib/jquery-ui/
+wwwroot/lib/masonry/
+wwwroot/lib/fontawesome/
+wwwroot/lib/bootstrap-icons/
+
+# IDE
+.idea/
+*.user
+
+# Build artifacts
+bin/
+obj/

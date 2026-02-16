@@ -1,0 +1,99 @@
+@model TipsyBaboon.UI.Pages.Generic.DetailModel
+@using TipsyBaboon.UI.Rendering
+@using TipsyBaboon.Core
+@using TipsyBaboon.Core.Interfaces
+@using TipsyBaboon.Core.Models
+
+@{
+    var topLevelRecordContext = FieldRenderer.GetWrapperRecordContextAttributes(Model.Schema!, Model.Entity);
+}
+
+<div id="@Model.FormId" record-form data-api-prefix="@Model.ApiPrefix" data-is-create="false" data-auto-save="@Model.AutoSave.ToString().ToLower()" data-save-orchestrator @Html.Raw(topLevelRecordContext)>
+    <input type="hidden" name="Id" value="@Model.EntityId" />
+    
+    <div class="row">
+        @foreach (var layoutSection in Model.Schema!.Layout)
+        {
+            <div class="col-md-@layoutSection.ColumnSize mb-3">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <h6 class="mb-0">@layoutSection.Title</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @foreach (var layoutProp in layoutSection.Properties)
+                            {
+                                var column = Model.Schema.Columns.FirstOrDefault(c => c.PropertyName == layoutProp.PropertyName);
+                                if (column != null && column.ShowInForm)
+                                {
+                                    var scaledSize = (layoutProp.ColumnSize * 12) / layoutSection.ColumnSize;
+                                    
+                                    <div class="col-md-@scaledSize mb-3">
+                                        @if (layoutProp.ShowLabel)
+                                        {
+                                            <label class="form-label fw-semibold">
+                                                @column.DisplayName
+                                                @if (column.IsRequired)
+                                                {
+                                                    <span class="text-danger">*</span>
+                                                }
+                                            </label>
+                                        }
+                                        @FieldRenderer.RenderField(Html, Model.Schema, column, Model.Entity, Model.FormId)
+                                        @if (!string.IsNullOrEmpty(column.Description))
+                                        {
+                                            <small class="form-text text-muted">@column.Description</small>
+                                        }
+                                    </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    
+    @if (!Model.IsModal)
+    {
+        var entityModel = Model.Entity as TipsyBaboonModel;
+        <div class="d-flex justify-content-between align-items-end gap-2 mt-3">
+            <div>
+                @{
+                    var privacyModel = new TipsyBaboon.UI.Models.PrivacySelectorModel
+                    {
+                        HasOwnership = Model.HasOwnership,
+                        OwnershipLevels = Model.OwnershipLevels,
+                        IsOwner = Model.IsOwner,
+                        IsCreate = false,
+                        CurrentLevel = entityModel?.OwnershipLevel ?? OwnershipLevel.Public,
+                        CurrentGroupId = entityModel?.GroupId,
+                        CurrentGroupName = Model.CurrentGroupName,
+                        UserGroups = Model.UserGroups,
+                        IsReadOnly = Model.Schema!.IsReadOnly,
+                        OwnerDisplayName = Model.OwnerDisplayName,
+                        OwnerId = entityModel?.OwnerId
+                    };
+                }
+                @await Html.PartialAsync("_PrivacySelector", privacyModel)
+            </div>
+            <div>
+                @if (!Model.AutoSave)
+                {
+                    <button type="button" class="btn btn-primary btn-save" disabled>
+                        <i class="bi bi-floppy me-1"></i> Save Changes
+                    </button>
+                }
+            </div>
+        </div>
+    }
+    else if (Model.HasOwnership)
+    {
+        var entityModelModal = Model.Entity as TipsyBaboonModel;
+        <input type="hidden" name="OwnershipLevel" value="@((int)(entityModelModal?.OwnershipLevel ?? OwnershipLevel.Public))" data-privacy-level-hidden />
+        if (entityModelModal?.GroupId != null)
+        {
+            <input type="hidden" name="GroupId" value="@entityModelModal.GroupId" data-privacy-group-hidden />
+        }
+    }
+</div>

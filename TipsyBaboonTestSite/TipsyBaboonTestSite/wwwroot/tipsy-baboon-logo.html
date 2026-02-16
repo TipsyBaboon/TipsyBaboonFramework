@@ -1,0 +1,940 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TIPSY BABOON Logo Explorer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Anton&family=Archivo+Black&family=Bangers&family=Barlow+Condensed:wght@800&family=Bebas+Neue&family=Black+Ops+One&family=Bungee&family=Cabin&family=Caveat&family=Chakra+Petch:wght@700&family=Cookie&family=Comfortaa&family=Comic+Sans+MS&family=Courier+New&family=Dancing+Script&family=DM+Sans&family=Fredoka&family=Fugaz+One&family=Great+Vibes&family=Handlee&family=Indie+Flower&family=Inter&family=Jost&family=Kalam&family=Lobster&family=Lobster+Two&family=Major+Mono+Display&family=Mulish&family=Nunito&family=Orbitron:wght@700&family=Oswald:wght@700&family=Outfit&family=Pacifico&family=Passion+One:wght@700&family=Poppins&family=Press+Start+2P&family=Quicksand&family=Raleway&family=Russo+One&family=Sacramento&family=Saira+Stencil+One&family=Satisfy&family=Shadows+Into+Light&family=Staatliches&family=Tangerine:wght@700&family=Teko:wght@700&family=Tenor+Sans&family=Righteous&family=Tahoma&family=Times+New+Roman&family=Trebuchet+MS&family=Ubuntu&family=Varela+Round&family=Verdana&family=Work+Sans&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #111;
+      min-height: 100vh;
+      padding: 30px;
+      font-family: system-ui, sans-serif;
+      color: #ccc;
+    }
+
+    h1 { color: #fff; text-align: center; margin-bottom: 8px; font-size: 20px; font-weight: 300; }
+    .subtitle { color: #666; text-align: center; margin-bottom: 30px; font-size: 13px; }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      max-width: 1000px;
+      margin: 0 auto 30px;
+      background: #1a1a1a;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #333;
+    }
+
+    .control-group { display: flex; flex-direction: column; gap: 6px; }
+    .control-group label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888; }
+
+    .control-group select, .control-group input[type="text"] {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: #222;
+      color: #fff;
+      font-size: 14px;
+    }
+
+    .font-dropdown {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .font-dropdown-toggle {
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #444;
+      background: #222;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .font-dropdown-toggle:hover {
+      border-color: #666;
+    }
+
+    .font-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #222;
+      border: 1px solid #444;
+      border-top: none;
+      border-radius: 0 0 6px 6px;
+      max-height: 300px;
+      overflow-y: auto;
+      z-index: 1000;
+      display: none;
+    }
+
+    .font-dropdown-menu.active {
+      display: block;
+    }
+
+    .font-option {
+      padding: 10px;
+      cursor: pointer;
+      color: #fff;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    .font-option:hover {
+      background: #333;
+    }
+
+    .font-option.selected {
+      background: #444;
+    }
+
+    .control-group select:focus, .control-group input:focus { outline: none; border-color: #666; }
+
+    .color-input-wrapper { display: flex; gap: 8px; align-items: center; }
+    .color-input-wrapper input[type="color"] { width: 40px; height: 38px; border: none; border-radius: 6px; cursor: pointer; background: transparent; }
+    .color-input-wrapper input[type="text"] { flex: 1; font-family: monospace; }
+
+    .logo-preview {
+      background: #3E2723;
+      border-radius: 12px;
+      padding: 40px;
+      margin: 0 auto 20px;
+      max-width: 1000px;
+      border: 1px solid #333;
+      overflow-x: auto;
+      cursor: pointer;
+    }
+
+    .logo-container { display: flex; align-items: center; justify-content: center; gap: 0; white-space: nowrap; }
+    .baboon-face { height: 1em; width: auto; vertical-align: middle; margin: 0 -0.05em; transform: translateY(-0.02em); }
+    .logo-text { font-size: 80px; line-height: 1; display: flex; align-items: center; }
+    .word1 { margin-right: 0.15em; }
+
+    .color-ref {
+      max-width: 1000px;
+      margin: 20px auto;
+      background: #1a1a1a;
+      padding: 15px 20px;
+      border-radius: 12px;
+      border: 1px solid #333;
+    }
+
+    .color-ref h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #888; margin-bottom: 12px; }
+    .color-swatches { display: flex; gap: 10px; flex-wrap: wrap; }
+
+    .swatch {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      padding: 5px;
+      border-radius: 6px;
+      transition: background 0.2s;
+    }
+
+    .swatch:hover { background: #333; }
+    .swatch-color { width: 40px; height: 40px; border-radius: 8px; border: 2px solid #444; }
+    .swatch-label { font-size: 9px; color: #666; font-family: monospace; }
+
+    .layout-toggle {
+      max-width: 1000px;
+      margin: 0 auto 20px;
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+    }
+
+    .layout-toggle button {
+      padding: 10px 20px;
+      border: 1px solid #444;
+      background: #222;
+      color: #ccc;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      transition: all 0.2s;
+    }
+
+    .layout-toggle button:hover { background: #333; }
+    .layout-toggle button.active { background: #444; border-color: #666; color: #fff; }
+
+    .info-panel {
+      max-width: 1000px;
+      margin: 20px auto;
+      background: #1a1a1a;
+      padding: 15px 20px;
+      border-radius: 12px;
+      border: 1px solid #333;
+      font-family: monospace;
+      font-size: 12px;
+    }
+
+    .info-panel code { color: #4fc3f7; }
+
+    .target-indicator {
+      display: inline-block;
+      padding: 2px 8px;
+      background: #333;
+      border-radius: 4px;
+      font-size: 10px;
+      margin-left: 8px;
+    }
+    .target-indicator.active { background: #4fc3f7; color: #000; }
+  </style>
+</head>
+<body>
+  <h1>TIPSY BABOON Logo Explorer</h1>
+  <p class="subtitle">Adjust colors and fonts - select target color with radio buttons, click swatches to apply</p>
+
+  <div class="layout-toggle">
+    <button class="active" onclick="setLayout('leading', this)">Face Leading</button>
+    <button onclick="setLayout('replace-o', this)">Face Replaces O's</button>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label>Font - "TIPSY"</label>
+      <div class="font-dropdown" id="font1Dropdown">
+        <div class="font-dropdown-toggle" onclick="toggleFontDropdown('font1Dropdown')">
+          <span id="font1Selected">Bangers</span>
+          <span>▼</span>
+        </div>
+        <div class="font-dropdown-menu" id="font1Menu">
+          <div class="font-option" data-font="'Alfa Slab One', sans-serif" onclick="selectFont('font1', this)">Alfa Slab One</div>
+          <div class="font-option" data-font="'Anton', sans-serif" onclick="selectFont('font1', this)">Anton</div>
+          <div class="font-option" data-font="'Archivo Black', sans-serif" onclick="selectFont('font1', this)">Archivo Black</div>
+          <div class="font-option" data-font="Arial, sans-serif" onclick="selectFont('font1', this)">Arial</div>
+          <div class="font-option selected" data-font="'Bangers', sans-serif" onclick="selectFont('font1', this)">Bangers</div>
+          <div class="font-option" data-font="'Barlow Condensed', sans-serif" onclick="selectFont('font1', this)">Barlow Condensed</div>
+          <div class="font-option" data-font="'Bebas Neue', sans-serif" onclick="selectFont('font1', this)">Bebas Neue</div>
+          <div class="font-option" data-font="'Black Ops One', sans-serif" onclick="selectFont('font1', this)">Black Ops One</div>
+          <div class="font-option" data-font="'Bungee', sans-serif" onclick="selectFont('font1', this)">Bungee</div>
+          <div class="font-option" data-font="'Cabin', sans-serif" onclick="selectFont('font1', this)">Cabin</div>
+          <div class="font-option" data-font="'Caveat', sans-serif" onclick="selectFont('font1', this)">Caveat</div>
+          <div class="font-option" data-font="'Chakra Petch', sans-serif" onclick="selectFont('font1', this)">Chakra Petch</div>
+          <div class="font-option" data-font="'Comic Sans MS', sans-serif" onclick="selectFont('font1', this)">Comic Sans MS</div>
+          <div class="font-option" data-font="'Cookie', sans-serif" onclick="selectFont('font1', this)">Cookie</div>
+          <div class="font-option" data-font="'Comfortaa', sans-serif" onclick="selectFont('font1', this)">Comfortaa</div>
+          <div class="font-option" data-font="'Courier New', monospace" onclick="selectFont('font1', this)">Courier New</div>
+          <div class="font-option" data-font="'Dancing Script', sans-serif" onclick="selectFont('font1', this)">Dancing Script</div>
+          <div class="font-option" data-font="'DM Sans', sans-serif" onclick="selectFont('font1', this)">DM Sans</div>
+          <div class="font-option" data-font="'Fredoka', sans-serif" onclick="selectFont('font1', this)">Fredoka</div>
+          <div class="font-option" data-font="'Fugaz One', sans-serif" onclick="selectFont('font1', this)">Fugaz One</div>
+          <div class="font-option" data-font="Garamond, serif" onclick="selectFont('font1', this)">Garamond</div>
+          <div class="font-option" data-font="Georgia, serif" onclick="selectFont('font1', this)">Georgia</div>
+          <div class="font-option" data-font="'Great Vibes', cursive" onclick="selectFont('font1', this)">Great Vibes</div>
+          <div class="font-option" data-font="'Handlee', cursive" onclick="selectFont('font1', this)">Handlee</div>
+          <div class="font-option" data-font="Impact, sans-serif" onclick="selectFont('font1', this)">Impact</div>
+          <div class="font-option" data-font="'Indie Flower', cursive" onclick="selectFont('font1', this)">Indie Flower</div>
+          <div class="font-option" data-font="'Inter', sans-serif" onclick="selectFont('font1', this)">Inter</div>
+          <div class="font-option" data-font="'Jost', sans-serif" onclick="selectFont('font1', this)">Jost</div>
+          <div class="font-option" data-font="'Kalam', cursive" onclick="selectFont('font1', this)">Kalam</div>
+          <div class="font-option" data-font="'Lobster', cursive" onclick="selectFont('font1', this)">Lobster</div>
+          <div class="font-option" data-font="'Lobster Two', cursive" onclick="selectFont('font1', this)">Lobster Two</div>
+          <div class="font-option" data-font="'Major Mono Display', monospace" onclick="selectFont('font1', this)">Major Mono Display</div>
+          <div class="font-option" data-font="'Mulish', sans-serif" onclick="selectFont('font1', this)">Mulish</div>
+          <div class="font-option" data-font="'Nunito', sans-serif" onclick="selectFont('font1', this)">Nunito</div>
+          <div class="font-option" data-font="'Orbitron', sans-serif" onclick="selectFont('font1', this)">Orbitron</div>
+          <div class="font-option" data-font="'Oswald', sans-serif" onclick="selectFont('font1', this)">Oswald</div>
+          <div class="font-option" data-font="'Outfit', sans-serif" onclick="selectFont('font1', this)">Outfit</div>
+          <div class="font-option" data-font="'Pacifico', cursive" onclick="selectFont('font1', this)">Pacifico</div>
+          <div class="font-option" data-font="'Passion One', sans-serif" onclick="selectFont('font1', this)">Passion One</div>
+          <div class="font-option" data-font="'Poppins', sans-serif" onclick="selectFont('font1', this)">Poppins</div>
+          <div class="font-option" data-font="'Press Start 2P', monospace" onclick="selectFont('font1', this)">Press Start 2P</div>
+          <div class="font-option" data-font="'Quicksand', sans-serif" onclick="selectFont('font1', this)">Quicksand</div>
+          <div class="font-option" data-font="'Raleway', sans-serif" onclick="selectFont('font1', this)">Raleway</div>
+          <div class="font-option" data-font="'Righteous', sans-serif" onclick="selectFont('font1', this)">Righteous</div>
+          <div class="font-option" data-font="'Russo One', sans-serif" onclick="selectFont('font1', this)">Russo One</div>
+          <div class="font-option" data-font="'Sacramento', cursive" onclick="selectFont('font1', this)">Sacramento</div>
+          <div class="font-option" data-font="'Saira Stencil One', sans-serif" onclick="selectFont('font1', this)">Saira Stencil One</div>
+          <div class="font-option" data-font="'Satisfy', cursive" onclick="selectFont('font1', this)">Satisfy</div>
+          <div class="font-option" data-font="'Shadows Into Light', cursive" onclick="selectFont('font1', this)">Shadows Into Light</div>
+          <div class="font-option" data-font="'Staatliches', sans-serif" onclick="selectFont('font1', this)">Staatliches</div>
+          <div class="font-option" data-font="Tahoma, sans-serif" onclick="selectFont('font1', this)">Tahoma</div>
+          <div class="font-option" data-font="'Tangerine', cursive" onclick="selectFont('font1', this)">Tangerine</div>
+          <div class="font-option" data-font="'Teko', sans-serif" onclick="selectFont('font1', this)">Teko</div>
+          <div class="font-option" data-font="'Tenor Sans', sans-serif" onclick="selectFont('font1', this)">Tenor Sans</div>
+          <div class="font-option" data-font="'Times New Roman', serif" onclick="selectFont('font1', this)">Times New Roman</div>
+          <div class="font-option" data-font="'Trebuchet MS', sans-serif" onclick="selectFont('font1', this)">Trebuchet MS</div>
+          <div class="font-option" data-font="'Ubuntu', sans-serif" onclick="selectFont('font1', this)">Ubuntu</div>
+          <div class="font-option" data-font="'Varela Round', sans-serif" onclick="selectFont('font1', this)">Varela Round</div>
+          <div class="font-option" data-font="Verdana, sans-serif" onclick="selectFont('font1', this)">Verdana</div>
+          <div class="font-option" data-font="'Work Sans', sans-serif" onclick="selectFont('font1', this)">Work Sans</div>
+        </div>
+        <input type="hidden" id="font1" value="'Bangers', sans-serif">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>Font - "BABOON"</label>
+      <div class="font-dropdown" id="font2Dropdown">
+        <div class="font-dropdown-toggle" onclick="toggleFontDropdown('font2Dropdown')">
+          <span id="font2Selected">Bangers</span>
+          <span>▼</span>
+        </div>
+        <div class="font-dropdown-menu" id="font2Menu">
+          <div class="font-option" data-font="'Alfa Slab One', sans-serif" onclick="selectFont('font2', this)">Alfa Slab One</div>
+          <div class="font-option" data-font="'Anton', sans-serif" onclick="selectFont('font2', this)">Anton</div>
+          <div class="font-option" data-font="'Archivo Black', sans-serif" onclick="selectFont('font2', this)">Archivo Black</div>
+          <div class="font-option" data-font="Arial, sans-serif" onclick="selectFont('font2', this)">Arial</div>
+          <div class="font-option selected" data-font="'Bangers', sans-serif" onclick="selectFont('font2', this)">Bangers</div>
+          <div class="font-option" data-font="'Barlow Condensed', sans-serif" onclick="selectFont('font2', this)">Barlow Condensed</div>
+          <div class="font-option" data-font="'Bebas Neue', sans-serif" onclick="selectFont('font2', this)">Bebas Neue</div>
+          <div class="font-option" data-font="'Black Ops One', sans-serif" onclick="selectFont('font2', this)">Black Ops One</div>
+          <div class="font-option" data-font="'Bungee', sans-serif" onclick="selectFont('font2', this)">Bungee</div>
+          <div class="font-option" data-font="'Cabin', sans-serif" onclick="selectFont('font2', this)">Cabin</div>
+          <div class="font-option" data-font="'Caveat', sans-serif" onclick="selectFont('font2', this)">Caveat</div>
+          <div class="font-option" data-font="'Chakra Petch', sans-serif" onclick="selectFont('font2', this)">Chakra Petch</div>
+          <div class="font-option" data-font="'Comic Sans MS', sans-serif" onclick="selectFont('font2', this)">Comic Sans MS</div>
+          <div class="font-option" data-font="'Cookie', sans-serif" onclick="selectFont('font2', this)">Cookie</div>
+          <div class="font-option" data-font="'Comfortaa', sans-serif" onclick="selectFont('font2', this)">Comfortaa</div>
+          <div class="font-option" data-font="'Courier New', monospace" onclick="selectFont('font2', this)">Courier New</div>
+          <div class="font-option" data-font="'Dancing Script', sans-serif" onclick="selectFont('font2', this)">Dancing Script</div>
+          <div class="font-option" data-font="'DM Sans', sans-serif" onclick="selectFont('font2', this)">DM Sans</div>
+          <div class="font-option" data-font="'Fredoka', sans-serif" onclick="selectFont('font2', this)">Fredoka</div>
+          <div class="font-option" data-font="'Fugaz One', sans-serif" onclick="selectFont('font2', this)">Fugaz One</div>
+          <div class="font-option" data-font="Garamond, serif" onclick="selectFont('font2', this)">Garamond</div>
+          <div class="font-option" data-font="Georgia, serif" onclick="selectFont('font2', this)">Georgia</div>
+          <div class="font-option" data-font="'Great Vibes', cursive" onclick="selectFont('font2', this)">Great Vibes</div>
+          <div class="font-option" data-font="'Handlee', cursive" onclick="selectFont('font2', this)">Handlee</div>
+          <div class="font-option" data-font="Impact, sans-serif" onclick="selectFont('font2', this)">Impact</div>
+          <div class="font-option" data-font="'Indie Flower', cursive" onclick="selectFont('font2', this)">Indie Flower</div>
+          <div class="font-option" data-font="'Inter', sans-serif" onclick="selectFont('font2', this)">Inter</div>
+          <div class="font-option" data-font="'Jost', sans-serif" onclick="selectFont('font2', this)">Jost</div>
+          <div class="font-option" data-font="'Kalam', cursive" onclick="selectFont('font2', this)">Kalam</div>
+          <div class="font-option" data-font="'Lobster', cursive" onclick="selectFont('font2', this)">Lobster</div>
+          <div class="font-option" data-font="'Lobster Two', cursive" onclick="selectFont('font2', this)">Lobster Two</div>
+          <div class="font-option" data-font="'Major Mono Display', monospace" onclick="selectFont('font2', this)">Major Mono Display</div>
+          <div class="font-option" data-font="'Mulish', sans-serif" onclick="selectFont('font2', this)">Mulish</div>
+          <div class="font-option" data-font="'Nunito', sans-serif" onclick="selectFont('font2', this)">Nunito</div>
+          <div class="font-option" data-font="'Orbitron', sans-serif" onclick="selectFont('font2', this)">Orbitron</div>
+          <div class="font-option" data-font="'Oswald', sans-serif" onclick="selectFont('font2', this)">Oswald</div>
+          <div class="font-option" data-font="'Outfit', sans-serif" onclick="selectFont('font2', this)">Outfit</div>
+          <div class="font-option" data-font="'Pacifico', cursive" onclick="selectFont('font2', this)">Pacifico</div>
+          <div class="font-option" data-font="'Passion One', sans-serif" onclick="selectFont('font2', this)">Passion One</div>
+          <div class="font-option" data-font="'Poppins', sans-serif" onclick="selectFont('font2', this)">Poppins</div>
+          <div class="font-option" data-font="'Press Start 2P', monospace" onclick="selectFont('font2', this)">Press Start 2P</div>
+          <div class="font-option" data-font="'Quicksand', sans-serif" onclick="selectFont('font2', this)">Quicksand</div>
+          <div class="font-option" data-font="'Raleway', sans-serif" onclick="selectFont('font2', this)">Raleway</div>
+          <div class="font-option" data-font="'Righteous', sans-serif" onclick="selectFont('font2', this)">Righteous</div>
+          <div class="font-option" data-font="'Russo One', sans-serif" onclick="selectFont('font2', this)">Russo One</div>
+          <div class="font-option" data-font="'Sacramento', cursive" onclick="selectFont('font2', this)">Sacramento</div>
+          <div class="font-option" data-font="'Saira Stencil One', sans-serif" onclick="selectFont('font2', this)">Saira Stencil One</div>
+          <div class="font-option" data-font="'Satisfy', cursive" onclick="selectFont('font2', this)">Satisfy</div>
+          <div class="font-option" data-font="'Shadows Into Light', cursive" onclick="selectFont('font2', this)">Shadows Into Light</div>
+          <div class="font-option" data-font="'Staatliches', sans-serif" onclick="selectFont('font2', this)">Staatliches</div>
+          <div class="font-option" data-font="Tahoma, sans-serif" onclick="selectFont('font2', this)">Tahoma</div>
+          <div class="font-option" data-font="'Tangerine', cursive" onclick="selectFont('font2', this)">Tangerine</div>
+          <div class="font-option" data-font="'Teko', sans-serif" onclick="selectFont('font2', this)">Teko</div>
+          <div class="font-option" data-font="'Tenor Sans', sans-serif" onclick="selectFont('font2', this)">Tenor Sans</div>
+          <div class="font-option" data-font="'Times New Roman', serif" onclick="selectFont('font2', this)">Times New Roman</div>
+          <div class="font-option" data-font="'Trebuchet MS', sans-serif" onclick="selectFont('font2', this)">Trebuchet MS</div>
+          <div class="font-option" data-font="'Ubuntu', sans-serif" onclick="selectFont('font2', this)">Ubuntu</div>
+          <div class="font-option" data-font="'Varela Round', sans-serif" onclick="selectFont('font2', this)">Varela Round</div>
+          <div class="font-option" data-font="Verdana, sans-serif" onclick="selectFont('font2', this)">Verdana</div>
+          <div class="font-option" data-font="'Work Sans', sans-serif" onclick="selectFont('font2', this)">Work Sans</div>
+        </div>
+        <input type="hidden" id="font2" value="'Bangers', sans-serif">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label style="display: flex; align-items: center; gap: 8px;">
+        <input type="radio" name="colorTarget" value="1" onchange="setTarget(1)" checked style="cursor: pointer;">
+        <span>Color - "TIPSY"</span>
+      </label>
+      <div class="color-input-wrapper">
+        <input type="color" id="colorPicker1" value="#F5E6D3" onchange="syncColor(1, this.value)">
+        <input type="text" id="color1" value="#F5E6D3" onchange="syncColorFromText(1, this.value)" onfocus="setTarget(1)">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label style="display: flex; align-items: center; gap: 8px;">
+        <input type="radio" name="colorTarget" value="2" onchange="setTarget(2)" style="cursor: pointer;">
+        <span>Color - "BABOON"</span>
+      </label>
+      <div class="color-input-wrapper">
+        <input type="color" id="colorPicker2" value="#D32F2F" onchange="syncColor(2, this.value)">
+        <input type="text" id="color2" value="#D32F2F" onchange="syncColorFromText(2, this.value)" onfocus="setTarget(2)">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label style="display: flex; align-items: center; gap: 8px;">
+        <input type="radio" name="colorTarget" value="bg" onchange="setTarget('bg')" style="cursor: pointer;">
+        <span>Background Color</span>
+      </label>
+      <div class="color-input-wrapper">
+        <input type="color" id="bgColorPicker" value="#271816" onchange="syncBgColor(this.value)">
+        <input type="text" id="bgColor" value="#271816" onchange="syncBgColorFromText(this.value)" onfocus="setTarget('bg')">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>Baseline Offset - "TIPSY"</label>
+      <input type="range" id="offset1" min="-20" max="20" value="0" onchange="updateBaselines()" style="width: 100%;">
+      <span id="offset1Value" style="font-size: 12px; color: #888;">0px</span>
+    </div>
+
+    <div class="control-group">
+      <label>Baseline Offset - "BABOON"</label>
+      <input type="range" id="offset2" min="-20" max="20" value="0" onchange="updateBaselines()" style="width: 100%;">
+      <span id="offset2Value" style="font-size: 12px; color: #888;">0px</span>
+    </div>
+  </div>
+
+  <div class="logo-preview">
+    <div class="logo-container">
+      <div class="logo-text" id="logoText"></div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin: 20px 0;">
+    <button onclick="downloadLogo()" style="padding: 10px 20px; font-size: 14px; cursor: pointer;">Download Logo (PNG)</button>
+  </div>
+
+  <div class="controls" style="margin-top: 20px;">
+    <div class="control-group">
+      <label>Custom Text</label>
+      <input type="text" id="customText" value=":fishing" onchange="updateLogo()" placeholder="Enter custom text">
+    </div>
+
+    <div class="control-group">
+      <label>Custom Font</label>
+      <div class="font-dropdown" id="customFontDropdown">
+        <div class="font-dropdown-toggle" onclick="toggleFontDropdown('customFontDropdown')">
+          <span id="customFontSelected">Caveat</span>
+          <span>▼</span>
+        </div>
+        <div class="font-dropdown-menu" id="customFontMenu">
+          <div class="font-option" data-font="'Alfa Slab One', sans-serif" onclick="selectFont('custom', this)">Alfa Slab One</div>
+          <div class="font-option" data-font="'Anton', sans-serif" onclick="selectFont('custom', this)">Anton</div>
+          <div class="font-option" data-font="'Archivo Black', sans-serif" onclick="selectFont('custom', this)">Archivo Black</div>
+          <div class="font-option" data-font="Arial, sans-serif" onclick="selectFont('custom', this)">Arial</div>
+          <div class="font-option" data-font="'Bangers', sans-serif" onclick="selectFont('custom', this)">Bangers</div>
+          <div class="font-option" data-font="'Barlow Condensed', sans-serif" onclick="selectFont('custom', this)">Barlow Condensed</div>
+          <div class="font-option" data-font="'Bebas Neue', sans-serif" onclick="selectFont('custom', this)">Bebas Neue</div>
+          <div class="font-option" data-font="'Black Ops One', sans-serif" onclick="selectFont('custom', this)">Black Ops One</div>
+          <div class="font-option" data-font="'Bungee', sans-serif" onclick="selectFont('custom', this)">Bungee</div>
+          <div class="font-option" data-font="'Cabin', sans-serif" onclick="selectFont('custom', this)">Cabin</div>
+          <div class="font-option selected" data-font="'Caveat', sans-serif" onclick="selectFont('custom', this)">Caveat</div>
+          <div class="font-option" data-font="'Chakra Petch', sans-serif" onclick="selectFont('custom', this)">Chakra Petch</div>
+          <div class="font-option" data-font="'Comic Sans MS', sans-serif" onclick="selectFont('custom', this)">Comic Sans MS</div>
+          <div class="font-option" data-font="'Cookie', sans-serif" onclick="selectFont('custom', this)">Cookie</div>
+          <div class="font-option" data-font="'Comfortaa', sans-serif" onclick="selectFont('custom', this)">Comfortaa</div>
+          <div class="font-option" data-font="'Courier New', monospace" onclick="selectFont('custom', this)">Courier New</div>
+          <div class="font-option" data-font="'Dancing Script', sans-serif" onclick="selectFont('custom', this)">Dancing Script</div>
+          <div class="font-option" data-font="'DM Sans', sans-serif" onclick="selectFont('custom', this)">DM Sans</div>
+          <div class="font-option" data-font="'Fredoka', sans-serif" onclick="selectFont('custom', this)">Fredoka</div>
+          <div class="font-option" data-font="'Fugaz One', sans-serif" onclick="selectFont('custom', this)">Fugaz One</div>
+          <div class="font-option" data-font="Garamond, serif" onclick="selectFont('custom', this)">Garamond</div>
+          <div class="font-option" data-font="Georgia, serif" onclick="selectFont('custom', this)">Georgia</div>
+          <div class="font-option" data-font="'Great Vibes', cursive" onclick="selectFont('custom', this)">Great Vibes</div>
+          <div class="font-option" data-font="'Handlee', cursive" onclick="selectFont('custom', this)">Handlee</div>
+          <div class="font-option" data-font="Impact, sans-serif" onclick="selectFont('custom', this)">Impact</div>
+          <div class="font-option" data-font="'Indie Flower', cursive" onclick="selectFont('custom', this)">Indie Flower</div>
+          <div class="font-option" data-font="'Inter', sans-serif" onclick="selectFont('custom', this)">Inter</div>
+          <div class="font-option" data-font="'Jost', sans-serif" onclick="selectFont('custom', this)">Jost</div>
+          <div class="font-option" data-font="'Kalam', cursive" onclick="selectFont('custom', this)">Kalam</div>
+          <div class="font-option" data-font="'Lobster', cursive" onclick="selectFont('custom', this)">Lobster</div>
+          <div class="font-option" data-font="'Lobster Two', cursive" onclick="selectFont('custom', this)">Lobster Two</div>
+          <div class="font-option" data-font="'Major Mono Display', monospace" onclick="selectFont('custom', this)">Major Mono Display</div>
+          <div class="font-option" data-font="'Mulish', sans-serif" onclick="selectFont('custom', this)">Mulish</div>
+          <div class="font-option" data-font="'Nunito', sans-serif" onclick="selectFont('custom', this)">Nunito</div>
+          <div class="font-option" data-font="'Orbitron', sans-serif" onclick="selectFont('custom', this)">Orbitron</div>
+          <div class="font-option" data-font="'Oswald', sans-serif" onclick="selectFont('custom', this)">Oswald</div>
+          <div class="font-option" data-font="'Outfit', sans-serif" onclick="selectFont('custom', this)">Outfit</div>
+          <div class="font-option" data-font="'Pacifico', cursive" onclick="selectFont('custom', this)">Pacifico</div>
+          <div class="font-option" data-font="'Passion One', sans-serif" onclick="selectFont('custom', this)">Passion One</div>
+          <div class="font-option" data-font="'Poppins', sans-serif" onclick="selectFont('custom', this)">Poppins</div>
+          <div class="font-option" data-font="'Press Start 2P', monospace" onclick="selectFont('custom', this)">Press Start 2P</div>
+          <div class="font-option" data-font="'Quicksand', sans-serif" onclick="selectFont('custom', this)">Quicksand</div>
+          <div class="font-option" data-font="'Raleway', sans-serif" onclick="selectFont('custom', this)">Raleway</div>
+          <div class="font-option" data-font="'Righteous', sans-serif" onclick="selectFont('custom', this)">Righteous</div>
+          <div class="font-option" data-font="'Russo One', sans-serif" onclick="selectFont('custom', this)">Russo One</div>
+          <div class="font-option" data-font="'Sacramento', cursive" onclick="selectFont('custom', this)">Sacramento</div>
+          <div class="font-option" data-font="'Saira Stencil One', sans-serif" onclick="selectFont('custom', this)">Saira Stencil One</div>
+          <div class="font-option" data-font="'Satisfy', cursive" onclick="selectFont('custom', this)">Satisfy</div>
+          <div class="font-option" data-font="'Shadows Into Light', cursive" onclick="selectFont('custom', this)">Shadows Into Light</div>
+          <div class="font-option" data-font="'Staatliches', sans-serif" onclick="selectFont('custom', this)">Staatliches</div>
+          <div class="font-option" data-font="Tahoma, sans-serif" onclick="selectFont('custom', this)">Tahoma</div>
+          <div class="font-option" data-font="'Tangerine', cursive" onclick="selectFont('custom', this)">Tangerine</div>
+          <div class="font-option" data-font="'Teko', sans-serif" onclick="selectFont('custom', this)">Teko</div>
+          <div class="font-option" data-font="'Tenor Sans', sans-serif" onclick="selectFont('custom', this)">Tenor Sans</div>
+          <div class="font-option" data-font="'Times New Roman', serif" onclick="selectFont('custom', this)">Times New Roman</div>
+          <div class="font-option" data-font="'Trebuchet MS', sans-serif" onclick="selectFont('custom', this)">Trebuchet MS</div>
+          <div class="font-option" data-font="'Ubuntu', sans-serif" onclick="selectFont('custom', this)">Ubuntu</div>
+          <div class="font-option" data-font="'Varela Round', sans-serif" onclick="selectFont('custom', this)">Varela Round</div>
+          <div class="font-option" data-font="Verdana, sans-serif" onclick="selectFont('custom', this)">Verdana</div>
+          <div class="font-option" data-font="'Work Sans', sans-serif" onclick="selectFont('custom', this)">Work Sans</div>
+        </div>
+        <input type="hidden" id="customFont" value="'Caveat', sans-serif">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label style="display: flex; align-items: center; gap: 8px;">
+        <input type="radio" name="colorTarget" value="custom" onchange="setTarget('custom')" style="cursor: pointer;">
+        <span>Custom Text Color</span>
+      </label>
+      <div class="color-input-wrapper">
+        <input type="color" id="customColorPicker" value="#8c9297" onchange="syncColor('custom', this.value)">
+        <input type="text" id="customColor" value="#8c9297" onchange="syncColorFromText('custom', this.value)" onfocus="setTarget('custom')">
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label>Baseline Offset - Custom</label>
+      <input type="range" id="customOffset" min="-20" max="20" value="-8" onchange="updateBaselines()" style="width: 100%;">
+      <span id="customOffsetValue" style="font-size: 12px; color: #888;">-8px</span>
+    </div>
+  </div>
+
+  <div class="logo-preview" id="previewCustom">
+    <div class="logo-container">
+      <div class="logo-text" id="logoCustom"></div>
+    </div>
+  </div>
+
+  <div style="text-align: center; margin: 20px 0;">
+    <button onclick="downloadLogoCustom()" style="padding: 10px 20px; font-size: 14px; cursor: pointer;">Download Custom (PNG)</button>
+  </div>
+
+  <div class="color-ref">
+    <h3>Colors from Baboon Reference (click to apply to current target)</h3>
+    <div class="color-swatches">
+      <div class="swatch" onclick="applySwatch('#E53935')">
+        <div class="swatch-color" style="background: #E53935;"></div>
+        <span class="swatch-label">#E53935<br>Red Nose</span>
+      </div>
+      <div class="swatch" onclick="applySwatch('#D32F2F')">
+        <div class="swatch-color" style="background: #D32F2F;"></div>
+        <span class="swatch-label">#D32F2F<br>Dark Red</span>
+      </div>
+      <div class="swatch" onclick="applySwatch('#2196F3')">
+        <div class="swatch-color" style="background: #2196F3;"></div>
+        <span class="swatch-label">#2196F3<br>Blue Face</span>
+      </div>
+      <div class="swatch" onclick="applySwatch('#1976D2')">
+        <div class="swatch-color" style="background: #1976D2;"></div>
+        <span class="swatch-label">#1976D2<br>Dark Blue</span>
+      </div>
+      <div class="swatch" onclick="applySwatch('#FFC107')">
+        <div class="swatch-color" style="background: #FFC107;"></div>
+        <span class="swatch-label">#FFC107<br>Eye Gold</span>
+      </div>
+      <div class="swatch" onclick="applySwatch('#FF9800')">
+        <div class="swatch-color" style="background: #FF9800;"></div>
+        <span class="swatch-label">#FF9800<br>Ear Orange</span>
+      </div>
+      <div class="swatch" onclick="applySwatch('#F5E6D3')">
+        <div class="swatch-color" style="background: #F5E6D3;"></div>
+        <span class="swatch-label">#F5E6D3<br>Cream Fur</span>
+      </div>
+      <div class="swatch" onclick="applySwatch('#D2691E')">
+        <div class="swatch-color" style="background: #D2691E;"></div>
+        <span class="swatch-label">#D2691E<br>Chocolate</span>
+      </div>
+      <div class="swatch" onclick="applySwatch('#8B4513')">
+        <div class="swatch-color" style="background: #8B4513;"></div>
+        <span class="swatch-label">#8B4513<br>Saddle Brown</span>
+      </div>
+      <div class="swatch" onclick="applySwatch('#5D4037')">
+        <div class="swatch-color" style="background: #5D4037;"></div>
+        <span class="swatch-label">#5D4037<br>Brown Fur</span>
+      </div>
+      <div class="swatch" onclick="applySwatch('#3E2723')">
+        <div class="swatch-color" style="background: #3E2723;"></div>
+        <span class="swatch-label">#3E2723<br>Dark Brown</span>
+      </div>
+      <div class="swatch" onclick="applySwatch('#FFFFFF')">
+        <div class="swatch-color" style="background: #FFFFFF;"></div>
+        <span class="swatch-label">#FFFFFF<br>White</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-panel">
+    <strong>Current Settings:</strong><br>
+    Font 1: <code id="infoFont1">Alfa Slab One</code> | 
+    Font 2: <code id="infoFont2">Alfa Slab One</code><br>
+    Color 1: <code id="infoColor1">#F5E6D3</code> | 
+    Color 2: <code id="infoColor2">#D32F2F</code> | 
+    Background: <code id="infoBgColor">#271816</code>
+  </div>
+
+  <script>
+    let currentLayout = 'leading';
+    let currentTarget = 1;
+    const baboonImg = './images/baboon.png';
+    let currentColorTarget = 1; // Track which color is being edited
+
+    function updateLogo() {
+      const font1 = document.getElementById('font1').value;
+      const font2 = document.getElementById('font2').value;
+      const color1 = document.getElementById('color1').value;
+      const color2 = document.getElementById('color2').value;
+
+      document.getElementById('infoFont1').textContent = font1.split("'")[1] || font1;
+      document.getElementById('infoFont2').textContent = font2.split("'")[1] || font2;
+      document.getElementById('infoColor1').textContent = color1;
+      document.getElementById('infoColor2').textContent = color2;
+
+      renderLayout();
+    }
+
+    function toggleFontDropdown(dropdownId) {
+      const menu = document.getElementById(dropdownId).querySelector('.font-dropdown-menu');
+      menu.classList.toggle('active');
+    }
+
+    function selectFont(fontId, element) {
+      const fontValue = element.dataset.font;
+      const fontName = element.textContent;
+      
+      // Handle different font ID formats
+      let inputId, displayId, dropdownId;
+      if (fontId === 'custom') {
+        inputId = 'customFont';
+        displayId = 'customFontSelected';
+        dropdownId = 'customFontDropdown';
+      } else {
+        inputId = fontId;
+        displayId = fontId + 'Selected';
+        dropdownId = fontId + 'Dropdown';
+      }
+      
+      document.getElementById(inputId).value = fontValue;
+      document.getElementById(displayId).textContent = fontName;
+      
+      // Update font styles in dropdown options
+      const dropdown = document.getElementById(dropdownId);
+      dropdown.querySelectorAll('.font-option').forEach(opt => opt.classList.remove('selected'));
+      element.classList.add('selected');
+      
+      // Render all options with their fonts
+      dropdown.querySelectorAll('.font-option').forEach(opt => {
+        opt.style.fontFamily = opt.dataset.font;
+      });
+      
+      // Close dropdown and update logo
+      dropdown.querySelector('.font-dropdown-menu').classList.remove('active');
+      updateLogo();
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+      if (!event.target.closest('.font-dropdown')) {
+        document.querySelectorAll('.font-dropdown-menu').forEach(menu => menu.classList.remove('active'));
+      }
+    });
+
+    // Initialize font styles in dropdowns
+    document.addEventListener('DOMContentLoaded', function() {
+      ['font1', 'font2', 'custom'].forEach(fontId => {
+        const dropdown = document.getElementById(fontId + 'FontDropdown');
+        if (dropdown) {
+          dropdown.querySelectorAll('.font-option').forEach(opt => {
+            opt.style.fontFamily = opt.dataset.font;
+          });
+        }
+      });
+      updateLogo();
+    });
+
+    function renderLayout() {
+      const container = document.getElementById('logoText');
+      const color1 = document.getElementById('color1').value;
+      const color2 = document.getElementById('color2').value;
+      const font1 = document.getElementById('font1').value;
+      const font2 = document.getElementById('font2').value;
+      const offset1 = document.getElementById('offset1').value;
+      const offset2 = document.getElementById('offset2').value;
+
+      if (currentLayout === 'leading') {
+        container.innerHTML = `
+          <img src="${baboonImg}" class="baboon-face" alt="Baboon" style="height: 1.1em; margin-right: 0.1em;">
+          <span style="font-family: ${font1}; color: ${color1}; margin-right: 0.15em; cursor: pointer; display: inline-block; transform: translateY(${offset1}px);" onclick="setTarget(1)">TIPSY</span>
+          <span style="font-family: ${font2}; color: ${color2}; cursor: pointer; display: inline-block; transform: translateY(${offset2}px);" onclick="setTarget(2)">BABOON</span>
+        `;
+      } else {
+        container.innerHTML = `
+          <span style="font-family: ${font1}; color: ${color1}; margin-right: 0.15em; cursor: pointer; display: inline-block; transform: translateY(${offset1}px);" onclick="setTarget(1)">TIPSY</span>
+          <span style="font-family: ${font2}; color: ${color2}; cursor: pointer; display: inline-block; transform: translateY(${offset2}px);" onclick="setTarget(2)">BAB</span><img src="${baboonImg}" class="baboon-face" alt="O" style="height: 0.85em;"><img src="${baboonImg}" class="baboon-face" alt="O" style="height: 0.85em;"><span style="font-family: ${font2}; color: ${color2}; cursor: pointer; display: inline-block; transform: translateY(${offset2}px);" onclick="setTarget(2)">N</span>
+        `;
+      }
+      // Add click handler to background area
+      document.querySelector('.logo-preview').onclick = function(e) {
+        if (e.target === this) {
+          setTarget('bg');
+        }
+      };
+
+      // Render second preview with custom text
+      const customContainer = document.getElementById('logoCustom');
+      const customText = document.getElementById('customText').value;
+      const customFont = document.getElementById('customFont').value;
+      const customColor = document.getElementById('customColor').value;
+      const customOffset = document.getElementById('customOffset').value;
+      const bgColor = document.getElementById('bgColor').value;
+
+      customContainer.innerHTML = `
+        <img src="${baboonImg}" class="baboon-face" alt="Baboon" style="height: 1.1em; margin-right: 0.1em;">
+        <span style="font-family: ${font1}; color: ${color1}; margin-right: 0.15em; cursor: pointer; display: inline-block; transform: translateY(${offset1}px);" onclick="setTarget(1)">TIPSY</span>
+        <span style="font-family: ${font2}; color: ${color2}; margin-right: 0.15em; cursor: pointer; display: inline-block; transform: translateY(${offset2}px);" onclick="setTarget(2)">BABOON</span>
+        <span style="font-family: ${customFont}; color: ${customColor}; cursor: pointer; display: inline-block; transform: translateY(${customOffset}px);" onclick="setTarget('custom')">${customText}</span>
+      `;
+      
+      // Update background color for both previews
+      const bgColorElements = document.querySelectorAll('.logo-preview');
+      bgColorElements.forEach(el => {
+        el.style.background = bgColor;
+      });
+
+      // Add click handler to background area of custom preview
+      document.getElementById('previewCustom').onclick = function(e) {
+        if (e.target === this) {
+          setTarget('custom');
+        }
+      };
+    }
+
+    function updateBaselines() {
+      const offset1 = document.getElementById('offset1').value;
+      const offset2 = document.getElementById('offset2').value;
+      const customOffset = document.getElementById('customOffset').value;
+      document.getElementById('offset1Value').textContent = offset1 + 'px';
+      document.getElementById('offset2Value').textContent = offset2 + 'px';
+      document.getElementById('customOffsetValue').textContent = customOffset + 'px';
+      renderLayout();
+    }
+
+    function downloadLogo() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      const font1 = document.getElementById('font1').value;
+      const font2 = document.getElementById('font2').value;
+      const color1 = document.getElementById('color1').value;
+      const color2 = document.getElementById('color2').value;
+      const offset1 = parseInt(document.getElementById('offset1').value);
+      const offset2 = parseInt(document.getElementById('offset2').value);
+      const fontSize = 80;
+      const padding = 40;
+      const imageSize = 90;
+      
+      // Measure text with actual fonts
+      ctx.font = `${fontSize}px ${font1}`;
+      const aimlessMetrics = ctx.measureText('TIPSY');
+      const aimlessWidth = aimlessMetrics.width;
+      
+      ctx.font = `${fontSize}px ${font2}`;
+      const baboonMetrics = ctx.measureText('BABOON');
+      const baboonWidth = baboonMetrics.width;
+      
+      // Canvas dimensions (add image width at start)
+      const totalWidth = imageSize + 10 + aimlessWidth + baboonWidth + padding * 2 + 30;
+      const totalHeight = Math.max(fontSize, imageSize) + padding * 2;
+      
+      canvas.width = totalWidth;
+      canvas.height = totalHeight;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Baseline position
+      const baseLine = totalHeight / 2;
+      let xPos = padding;
+      
+      // Draw baboon image
+      const img = new Image();
+      img.onload = function() {
+        ctx.drawImage(img, xPos, baseLine - imageSize / 2, imageSize, imageSize);
+        xPos += imageSize + 10;
+        
+        // Draw AIMLESS
+        ctx.font = `${fontSize}px ${font1}`;
+        ctx.fillStyle = color1;
+        ctx.textBaseline = 'middle';
+        ctx.fillText('TIPSY', xPos, baseLine - offset1);
+        xPos += aimlessWidth + 15;
+        
+        // Draw BABOON
+        ctx.font = `${fontSize}px ${font2}`;
+        ctx.fillStyle = color2;
+        ctx.textBaseline = 'middle';
+        ctx.fillText('BABOON', xPos, baseLine - offset2);
+        
+        // Download as PNG
+        canvas.toBlob(function(blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'aimless-baboon-logo.png';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+      };
+      img.src = './images/baboon.png';
+    }
+    
+    function downloadLogoCustom() {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      const font2 = document.getElementById('font2').value;
+      const customFont = document.getElementById('customFont').value;
+      const color2 = document.getElementById('color2').value;
+      const customColor = document.getElementById('customColor').value;
+      const offset2 = parseInt(document.getElementById('offset2').value);
+      const customOffset = parseInt(document.getElementById('customOffset').value);
+      const customText = document.getElementById('customText').value;
+      const fontSize = 80;
+      const padding = 40;
+      const imageSize = 90;
+      
+      // Measure text with actual fonts
+      ctx.font = `${fontSize}px ${font2}`;
+      const baboonMetrics = ctx.measureText('BABOON');
+      const baboonWidth = baboonMetrics.width;
+      
+      ctx.font = `${fontSize}px ${customFont}`;
+      const customMetrics = ctx.measureText(customText);
+      const customWidth = customMetrics.width;
+      
+      // Canvas dimensions
+      const totalWidth = imageSize + 10 + baboonWidth + customWidth + padding * 2 + 30;
+      const totalHeight = Math.max(fontSize, imageSize) + padding * 2;
+      
+      canvas.width = totalWidth;
+      canvas.height = totalHeight;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      
+      // Baseline position
+      const baseLine = totalHeight / 2;
+      let xPos = padding;
+      
+      // Draw baboon image
+      const img = new Image();
+      img.onload = function() {
+        ctx.drawImage(img, xPos, baseLine - imageSize / 2, imageSize, imageSize);
+        xPos += imageSize + 10;
+        
+        // Draw BABOON
+        ctx.font = `${fontSize}px ${font2}`;
+        ctx.fillStyle = color2;
+        ctx.textBaseline = 'middle';
+        ctx.fillText('BABOON', xPos, baseLine - offset2);
+        xPos += baboonWidth + 15;
+        
+        // Draw custom text
+        ctx.font = `${fontSize}px ${customFont}`;
+        ctx.fillStyle = customColor;
+        ctx.textBaseline = 'middle';
+        ctx.fillText(customText, xPos, baseLine - customOffset);
+        
+        // Download as PNG
+        canvas.toBlob(function(blob) {
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement('a');
+          link.href = url;
+          link.download = 'aimless-baboon-custom.png';
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 'image/png');
+      };
+      img.src = './images/baboon.png';
+    }
+
+    function setLayout(layout, btn) {
+      currentLayout = layout;
+      document.querySelectorAll('.layout-toggle button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      renderLayout();
+    }
+
+    function setTarget(target) {
+      currentColorTarget = target;
+      // Update the radio button's checked state
+      document.querySelector(`input[name="colorTarget"][value="${target}"]`).checked = true;
+    }
+
+    function syncColor(num, value) {
+      if (num === 'custom') {
+        document.getElementById('customColor').value = value;
+        document.getElementById('customColorPicker').value = value;
+        document.querySelector(`input[name="colorTarget"][value="custom"]`).checked = true;
+      } else {
+        document.getElementById('color' + num).value = value;
+        document.getElementById('colorPicker' + num).value = value;
+        document.getElementById('infoColor' + num).textContent = value;
+        document.querySelector(`input[name="colorTarget"][value="${num}"]`).checked = true;
+      }
+      updateLogo();
+    }
+
+    function syncColorFromText(num, value) {
+      if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+        if (num === 'custom') {
+          document.getElementById('customColorPicker').value = value;
+        } else {
+          document.getElementById('colorPicker' + num).value = value;
+          document.getElementById('infoColor' + num).textContent = value;
+        }
+        updateLogo();
+      }
+    }
+
+    function applySwatch(color) {
+      if (currentColorTarget === 1 || currentColorTarget === 2) {
+        syncColor(currentColorTarget, color);
+        document.getElementById('colorPicker' + currentColorTarget).value = color;
+      } else if (currentColorTarget === 'custom') {
+        syncColor('custom', color);
+      } else if (currentColorTarget === 'bg') {
+        syncBgColor(color);
+      }
+    }
+
+    function syncBgColor(value) {
+      document.getElementById('bgColor').value = value;
+      document.getElementById('infoBgColor').textContent = value;
+      document.querySelector('.logo-preview').style.background = value;
+      // Update radio button
+      document.querySelector('input[name="colorTarget"][value="bg"]').checked = true;
+      setTarget('bg');
+    }
+
+    function syncBgColorFromText(value) {
+      if (/^#[0-9A-Fa-f]{6}$/.test(value)) {
+        document.getElementById('bgColorPicker').value = value;
+        document.getElementById('infoBgColor').textContent = value;
+        document.querySelector('.logo-preview').style.background = value;
+      }
+    }
+
+    updateLogo();
+  </script>
+</body>
+</html>

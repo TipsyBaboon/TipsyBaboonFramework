@@ -1,0 +1,49 @@
+@model TipsyBaboon.UI.Models.GridRenderModel
+@using System.Text.Json
+@using TipsyBaboon.UI.Rendering
+
+@{
+    FieldRenderer.AddScript("permissionLevel");
+    FieldRenderer.AddScript(Model.IsEditable ? "grid" : "gridReadonly");
+}
+
+<!-- DEBUG: ParentIdPropertyName=@Model.ParentIdPropertyName ParentEntityId=@Model.ParentEntityId -->
+<div id="@Model.GridId" class="tipsybaboon-grid w-100" data-editable="@Model.IsEditable.ToString().ToLower()">
+    <div class="grid-toolbar"></div>
+    <div class="grid-content">
+        <div class="table-responsive">
+            <table class="table table-hover w-100">
+                @await Html.PartialAsync("_TipsyBaboonGridHeaders", Model)
+                <tbody class="grid-body-loading">
+                    <tr>
+                        <td colspan="@Model.Columns.Count(c => !c.Hidden)" class="text-center py-4">
+                            <div class="spinner-border text-primary"></div>
+                            <span class="ms-2">Loading...</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="grid-pagination"></div>
+</div>
+
+<script>
+(function() {
+    var gridId = '@Model.GridId';
+    var config = @Html.Raw(JsonSerializer.Serialize(Model));
+
+    var $container = document.getElementById(gridId);
+    var $recordForm = $container ? $container.closest('[record-form]') : null;
+    if ($recordForm && config.IsEditable && !config.AutoSave) {
+        config.AutoSave = $recordForm.getAttribute('data-auto-save') === 'true';
+    }
+
+    var form = ($container && $container.closest('[record-form]')) || document;
+    form.addEventListener('form:ready', function() {
+        config.IsEditable
+            ? new TipsyBaboon.UI.TipsyBaboonGrid(config)
+            : new TipsyBaboon.UI.TipsyBaboonGridReadonly(config);
+    });
+})();
+</script>

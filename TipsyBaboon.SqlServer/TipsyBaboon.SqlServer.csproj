@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net10.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<RootNamespace>TipsyBaboon.SqlServer</RootNamespace>
+		<AssemblyName>TipsyBaboon.SqlServer</AssemblyName>
+
+		<!-- NuGet Package Metadata -->
+		<PackageId>TipsyBaboon.SqlServer</PackageId>
+		<Version>1.1.0</Version>
+		<Authors>Tipsy Baboon</Authors>
+		<Company>Tipsy Baboon</Company>
+		<Product>TipsyBaboon Framework</Product>
+		<Description>SQL Server data provider for TipsyBaboon. Implements storage, querying, schema synchronization, and change tracking for SQL Server databases. Handles model-to-table mapping, dynamic query building, and transactional operations.</Description>
+		<Copyright>Copyright © 2026 Tipsy Baboon</Copyright>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageProjectUrl></PackageProjectUrl>
+		<RepositoryUrl></RepositoryUrl>
+		<RepositoryType>git</RepositoryType>
+		<PackageTags>tipsybaboon;rad;framework;sql-server;data-provider;entity-framework;schema-sync</PackageTags>
+		<PackageIcon>icon.png</PackageIcon>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<NoWarn>$(NoWarn);CS1591</NoWarn>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
+		<PackageReference Include="TipsyBaboon.Core" Version="1.1.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Include="icon.png" Pack="true" PackagePath="" />
+		<None Include="README.md" Pack="true" PackagePath="" Condition="Exists('README.md')" />
+	</ItemGroup>
+
+</Project>

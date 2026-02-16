@@ -1,0 +1,13 @@
+{
+  "DetailedErrors": true,
+  "Authentication": {
+    "Google": {
+      "ClientId": "YOUR-GOOGLE-CLIENT-ID.apps.googleusercontent.com",
+      "ClientSecret": "YOUR-GOOGLE-CLIENT-SECRET"
+    },
+    "Microsoft": {
+      "ClientId": "YOUR-MICROSOFT-CLIENT-ID",
+      "ClientSecret": "YOUR-MICROSOFT-CLIENT-SECRET"
+    }
+  }
+}

@@ -1,0 +1,262 @@
+﻿@use '../variables/colors' as *;
+@use '../extenders/palettes' as *;
+
+body {
+    @extend .palette-bg-0;
+}
+
+// Layout containers
+.container,
+.container-fluid {
+    width: 1433px;
+    max-width: 95vw;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.modal {
+    border: 1px solid map-get($colors, 'fg-2');
+
+    .modal-header {
+        @extend .palette-bg-1;
+        border-bottom: 1px solid map-get($colors, 'fg-3');
+
+        .modal-title {
+            font-weight: bolder;
+            font-size: 1.25rem;
+        }
+
+        .btn-close {
+            color: $fg-0;
+            opacity: 0.8;
+
+            &:hover {
+                opacity: 1;
+            }
+
+            &:focus {
+                box-shadow: 0 0 0 0.25rem rgba(map-get($colors, 'fg-0'), 0.25);
+                opacity: 1;
+            }
+        }
+    }
+
+    .modal-body {
+        @extend .palette-bg-0;
+    }
+
+    .modal-footer {
+        @extend .palette-bg-3;
+        border-top: 1px solid map-get($colors, 'fg-3');
+    }
+}
+
+$l1-units: ('card', 'accordion');
+
+@each $unit in $l1-units {
+    .#{$unit} {
+        border: 1px solid map-get($colors, 'fg-3');
+
+        .#{$unit}-header {
+            @extend .palette-bg-1;
+            border-bottom: 1px solid map-get($colors, 'fg-3');
+
+            .#{$unit}-title {
+                font-weight: bolder;
+                font-size: 1.25rem;
+                margin-bottom: 1rem;
+            }
+        }
+
+        .#{$unit}-body {
+            @extend .palette-bg-2;
+        }
+
+        .#{$unit}-footer {
+            @extend .palette-bg-3;
+            color: map-get($colors, 'fg-0');
+            border-top: 1px solid map-get($colors, 'fg-3');
+        }
+    }
+}
+
+// =============================================================================
+// Accordion - Theme Styling
+// =============================================================================
+
+.accordion {
+    .accordion-item {
+        background-color: map-get($colors, 'bg-1');
+        border: 1px solid map-get($colors, 'bg-3');
+    }
+
+    .accordion-header {
+        .accordion-button {
+            background-color: map-get($colors, 'bg-2');
+            color: map-get($colors, 'fg-0');
+            font-weight: bold;
+            border: none;
+            // Light colored collapse icon
+            &::after {
+                filter: brightness(0) invert(1);
+            }
+
+            &:not(.collapsed) {
+                background-color: map-get($colors, 'bg-3');
+                color: map-get($colors, 'fg-0');
+
+                &::after {
+                    filter: brightness(0) invert(1);
+                }
+            }
+
+            &:hover {
+                background-color: map-get($colors, 'bg-3');
+            }
+
+            &:focus {
+                box-shadow: 0 0 0 0.25rem rgba(map-get($colors, 'primary'), 0.25);
+            }
+        }
+    }
+
+    .accordion-body {
+        background-color: map-get($colors, 'bg-2');
+        color: map-get($colors, 'fg-0');
+    }
+}
+
+// =============================================================================
+// Tabs - bg-0 for unselected, bg-3 for selected
+// =============================================================================
+
+.nav-tabs {
+    border-bottom: 1px solid map-get($colors, 'bg-3');
+
+    .nav-link {
+        background-color: map-get($colors, 'bg-0');
+        color: map-get($colors, 'fg-2');
+        border: 1px solid map-get($colors, 'bg-2');
+        border-bottom: none;
+        font-weight: bold;
+
+        &:hover {
+            background-color: map-get($colors, 'bg-1');
+            color: map-get($colors, 'fg-0');
+            border-color: map-get($colors, 'bg-2');
+        }
+
+        &.active {
+            background-color: map-get($colors, 'bg-3');
+            color: map-get($colors, 'fg-0');
+            border-color: map-get($colors, 'bg-3');
+            border-bottom-color: transparent;
+        }
+    }
+}
+
+.tab-content {
+    .tab-pane {
+        background-color: map-get($colors, 'bg-3');
+        color: map-get($colors, 'fg-0');
+        padding: 1rem;
+        border: 1px solid map-get($colors, 'bg-3');
+        border-top: none;
+    }
+}
+
+// =============================================================================
+// Tables - L2 Units with Transparency
+// =============================================================================
+
+// Table base styling - override Bootstrap CSS variables
+.table {
+    --bs-table-color: #{map-get($colors, 'fg-0')};
+    --bs-table-bg: transparent;
+    --bs-table-border-color: #{map-get($colors, 'fg-3')};
+    --bs-table-striped-bg: #{rgba(map-get($colors, 'bg-2'), 0.5)};
+    --bs-table-striped-color: #{map-get($colors, 'fg-0')};
+    --bs-table-active-bg: #{rgba(map-get($colors, 'bg-3'), 0.5)};
+    --bs-table-active-color: #{map-get($colors, 'fg-0')};
+    --bs-table-hover-bg: #{rgba(map-get($colors, 'bg-3'), 0.5)};
+    --bs-table-hover-color: #{map-get($colors, 'fg-0')};
+    border: 1px solid $fg-3;
+
+    > thead {
+        --bs-table-bg: #{map-get($colors, 'bg-0')};
+        border-bottom-color: map-get($colors, 'fg-3');
+    }
+
+    > tbody {
+        --bs-table-bg: #{map-get($colors, 'bg-4')};
+        border-top-color: map-get($colors, 'fg-3');
+    }
+}
+
+    // Table dark header variant
+    .table-dark,
+    thead.table-dark,
+    .table > thead.table-dark {
+        --bs-table-color: #{map-get($colors, 'fg-0')};
+        --bs-table-bg: #{map-get($colors, 'bg-3')};
+        --bs-table-border-color: #{map-get($colors, 'fg-3')};
+    }
+
+// Table row color variants - override CSS variables for each color
+// Note: secondary and light only need dark text when fully opaque, transparent uses light text
+@each $color in $paletteTypes {
+    .table-#{$color},
+    tr.table-#{$color},
+    .table > tbody > tr.table-#{$color} {
+        --bs-table-color: #{map-get($colors, 'fg-0')};
+        --bs-table-bg: #{rgba(map-get($colors, $color), 0.15)};
+        --bs-table-hover-bg: #{rgba(map-get($colors, $color), 0.3)};
+        --bs-table-hover-color: #{map-get($colors, 'fg-0')};
+    }
+}
+
+
+.grid-filter-row {
+    input [type="text"],
+    input[type="password"],
+    input[type="email"],
+    input[type="number"],
+    input[type="tel"],
+    input[type="url"],
+    input[type="search"],
+    input[type="date"],
+    input[type="time"],
+    input[type="datetime-local"],
+    textarea,
+    select,
+    .form-control {
+        border-radius: 0;
+    }
+}
+
+// =============================================================================
+// Toast - Like info alert but more opaque
+// =============================================================================
+
+.toast-container {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    z-index: 1090;
+}
+
+.toast {
+    background-color: rgba(map-get($colors, 'info'), 0.25);
+    color: map-get($colors, 'info-bright');
+    border: 1px solid rgba(map-get($colors, 'info'), 0.4);
+
+    .toast-header {
+        background-color: rgba(map-get($colors, 'info'), 0.35);
+        color: map-get($colors, 'info-bright');
+        border-bottom: 1px solid rgba(map-get($colors, 'info'), 0.5);
+    }
+
+    .toast-body {
+        color: map-get($colors, 'fg-0');
+    }
+}

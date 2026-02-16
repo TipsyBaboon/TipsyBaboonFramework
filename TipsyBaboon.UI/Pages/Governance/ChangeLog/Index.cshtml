@@ -1,0 +1,55 @@
+@page "/Governance/ChangeLog"
+@model TipsyBaboon.UI.Pages.Governance.ChangeLog.IndexModel
+@using TipsyBaboon.UI.Rendering
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Change Log";
+}
+
+@* Model-specific styles *@
+@foreach (var stylePath in Model.ModelStylePaths)
+{
+    <link rel="stylesheet" href="@stylePath" />
+}
+<script src="@Html.CacheVersionUrl("/_content/TipsyBaboon.UI/js/tipsybaboon-core-loader.js")"></script>
+
+@{
+    FieldRenderer.BeginScriptCollection();
+}
+
+<div class="container-fluid" data-form-id="@Model.FormId">
+    <div class="card">
+        <div class="card-header">
+            <span class="card-title">Change Log</span>
+        </div>
+        <div class="card-body">
+            @if (Model.GridModel != null)
+            {
+                @await Html.PartialAsync("_TipsyBaboonGrid", Model.GridModel)
+            }
+            else
+            {
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Entity type not found.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@{
+    var fieldScripts = FieldRenderer.EndScriptCollection().Select(s => s.Contains('/') || s.Contains('.') ? Html.CacheVersionUrl(s) : s).ToList();
+    var allScripts = Model.ModelScriptPaths.Select(s => Html.CacheVersionUrl(s)).Concat(fieldScripts).ToList();
+    var scriptsJson = System.Text.Json.JsonSerializer.Serialize(allScripts);
+}
+
+<script>
+(async function() {
+    var loader = TipsyBaboon.Loader;
+    await loader.EnsureCoreDependencies();
+    await loader.EnsureTipsyBaboonLib('common');
+    await loader.LoadAll(@Html.Raw(scriptsJson));
+    document.dispatchEvent(new CustomEvent('form:ready', { bubbles: true }));
+})();
+</script>

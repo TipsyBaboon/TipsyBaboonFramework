@@ -1,0 +1,45 @@
+@model TipsyBaboon.UI.Models.FieldViewModel<DateTime?>
+@using TipsyBaboon.UI.Rendering
+
+@{
+    var name = Model.Column.PropertyName;
+    var elementId = Model.ElementId;
+    var inputName = Model.InputName;
+    string dateValue = "";
+    string timeValue = "";
+    if (Model.Value.HasValue)
+    {
+        dateValue = Model.Value.Value.ToString("yyyy-MM-dd");
+        timeValue = Model.Value.Value.ToString("HH:mm");
+    }
+    var isReadOnly = ValidationHelper.IsReadOnly(Model.Column);
+    var validationAttrs = ValidationHelper.FormatValidationAttributes(Model.Column);
+}
+
+<div class="d-flex gap-2">
+    <input type="date" id="@elementId-date" name="@inputName-date" value="@dateValue" class="form-control" @(isReadOnly ? "readonly" : "") @Html.Raw(validationAttrs) />
+    <input type="time" id="@elementId-time" name="@inputName-time" value="@timeValue" class="form-control" @(isReadOnly ? "readonly" : "") />
+</div>
+<input type="hidden" id="@elementId" name="@inputName" value="@(Model.Value?.ToString("o") ?? "")" @Html.Raw(Model.FieldContextAttribute) />
+
+<script>
+    (function() {
+        const dateInput = document.getElementById('@elementId-date');
+        const timeInput = document.getElementById('@elementId-time');
+        const hiddenInput = document.getElementById('@elementId');
+        
+        function UpdateHiddenField() {
+            const date = dateInput.value;
+            const time = timeInput.value || '00:00';
+            if (date) {
+                const combined = new Date(date + 'T' + time);
+                hiddenInput.value = combined.toISOString();
+            } else {
+                hiddenInput.value = '';
+            }
+        }
+        
+        dateInput.addEventListener('change', UpdateHiddenField);
+        timeInput.addEventListener('change', UpdateHiddenField);
+    })();
+</script>

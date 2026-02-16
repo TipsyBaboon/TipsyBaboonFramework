@@ -1,0 +1,357 @@
+// =============================================================================
+// Navbar - Horizontal Menu Navigation (Self-Contained)
+// =============================================================================
+// This component uses its own spacing/sizing rules for functional UI.
+// Palette colors are consistent with the site theme.
+
+@use '../variables/colors' as *;
+
+// -----------------------------------------------------------------------------
+// Bottom Navbar Container
+// -----------------------------------------------------------------------------
+
+.horizontal-menu {
+  .bottom-navbar {
+    background-color: map-get($colors, 'primary');
+    background-image: linear-gradient(to bottom, map-get($colors, 'primary-dark'), map-get($colors, 'primary'));
+    background-repeat: no-repeat;
+    background-size: cover;
+    color: map-get($colors, 'fg-0');
+    margin-bottom: 1.5rem;
+    position: relative;
+    top: 0;
+    right: 0;
+    left: 0;
+    width: 100%;
+    display: flex;
+    align-items: flex-end;  // Align items to bottom of nav area
+    transition: 0.3s;
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.6);
+    
+    @media (max-width: 991px) {
+      display: none;
+      
+      &.header-toggled {
+        display: block;
+        max-height: calc(100vh - 78px);
+        overflow: auto;
+      }
+    }
+    
+    // -------------------------------------------------------------------------
+    // Page Navigation Container
+    // -------------------------------------------------------------------------
+    
+    .page-navigation {
+      position: relative;
+      width: 100%;
+      z-index: 99;
+      display: flex;
+      justify-content: flex-start;  // Left-align items, don't spread
+      transition: 0.2s;
+      
+      @media (max-width: 991px) {
+        border: none;
+        display: block;
+      }
+      
+      // -----------------------------------------------------------------------
+      // Main Nav Items
+      // -----------------------------------------------------------------------
+      
+      > .nav-item {
+        line-height: 1;
+        text-align: left;
+        
+        @media (max-width: 991px) {
+          display: block;
+          width: 100%;
+          border-right: none;
+        }
+        
+        &:last-child {
+          border-right: none;
+        }
+        
+        // Main nav link styling - icons inline with text
+        > .nav-link {
+          position: relative;
+          color: map-get($colors, 'fg-0');
+          padding: 10px 20px;  // No vertical padding, full height comes from flex
+          height: 100%;  // Full height of navbar
+          line-height: 1;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          text-align: left;
+          transition: 0.25s;
+          
+          .menu-title {
+            font-size: 0.937rem;
+            font-weight: 600;
+          }
+          
+          .menu-icon {
+            font-size: 1.125rem;
+            color: map-get($colors, 'fg-0');
+            font-weight: 900;  // FontAwesome 5 Solid requires 900
+            margin-right: 8px;  // Space between icon and text
+            transition: 0.25s;
+          }
+          
+          // Invisible placeholder to preserve spacing when no icon is present
+          .menu-icon-spacer {
+            display: inline-block;
+            width: 1.125rem;
+            margin-right: 8px;
+          }
+          
+          .menu-arrow {
+            margin-left: 6px;
+            display: none;
+            transform: rotate(0deg);
+            transform-origin: center;
+            transition: 0.25s;
+            font-weight: 900;
+            
+            &:before {
+              content: "\f078";
+              font-family: "Font Awesome 5 Free";
+              font-style: normal;
+              display: block;
+              font-size: 16px;
+              line-height: 1;
+            }
+          }
+        }
+
+
+        // Hover state - full height button with secondary gradient (nav-link specific)
+        > .nav-link:hover {
+          background-color: map-get($colors, 'secondary');
+          background-image: linear-gradient(to bottom, map-get($colors, 'secondary-dark'), map-get($colors, 'secondary'));
+          color: map-get($colors, 'bg-0');
+
+          .menu-icon,
+          .menu-title {
+            color: inherit;
+          }
+        }
+
+        @media (min-width: 768px) {
+          &:hover {
+            > .submenu {
+              display: block;
+            }
+            
+            > .nav-link {
+              .menu-arrow {
+                transform: rotate(180deg);
+              }
+            }
+          }
+        }
+        
+        @media (max-width: 991px) {
+          &.show-submenu {
+            > .submenu {
+              display: block;
+            }
+            
+            > .nav-link {
+              .menu-arrow {
+                transform: rotate(180deg);
+              }
+            }
+          }
+        }
+        
+        // Active state - full height button with success gradient
+        &.active {
+          > .nav-link {
+            position: relative;
+            background-color: map-get($colors, 'success');
+            background-image: linear-gradient(to bottom, map-get($colors, 'success-dark'), map-get($colors, 'success'));
+            color: map-get($colors, 'fg-0');
+
+            .menu-icon,
+            .menu-title,
+            .menu-arrow {
+              color: inherit;
+            }
+          }
+        }
+        &.child-active  > .nav-link::after {
+          content: '';
+          position: absolute;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          height: 3px;
+
+          background-image: linear-gradient(to right, map-get($colors, 'success-bright'), map-get($colors, 'success'));
+          box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+          transition: opacity 0.18s ease, transform 0.18s ease;
+          
+          opacity: 1;
+        }
+
+        // ---------------------------------------------------------------------
+        // Submenu
+        // ---------------------------------------------------------------------
+        
+        .submenu {
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          background: map-get($colors, 'bg-1');
+          box-shadow: 0px 3px 21px 0px rgba(0, 0, 0, 0.2);
+          z-index: 1000;
+          min-width: 200px;
+          
+          @media (max-width: 991px) {
+            top: 0;
+            position: relative;
+            box-shadow: none;
+          }
+          
+          ul {
+            list-style-type: none;
+            padding-left: 0;
+            width: auto;
+            padding: 0;
+            margin: 0;
+            
+            @media (max-width: 991px) {
+              padding: 0;
+            }
+            
+            li {
+              display: block;
+              line-height: 20px;
+              
+              a {
+                display: block;
+                padding: .75rem 1.5rem;
+                font-weight: 400;
+                color: map-get($colors, 'fg-0');
+                text-decoration: none;
+                text-align: left;
+                margin: 2px 0;
+                border-radius: 4px;
+                transition: 0.2s;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                
+                // Hover - secondary palette (gold)
+                &:hover {
+                  color: map-get($colors, 'secondary-bright');
+                  background-color: rgba(map-get($colors, 'secondary'), 0.1);
+                }
+                
+                // Active - primary palette (green)
+                &.active {
+                  background-color: map-get($colors, 'success');
+                  color: map-get($colors, 'fg-0');
+                }
+              }
+              
+              &.active a {
+                  background-color: map-get($colors, 'success');
+                  color: map-get($colors, 'fg-0');
+              }
+            }
+          }
+        }
+        
+        // Non-mega-menu items
+        &:not(.mega-menu) {
+          position: relative;
+        }
+        
+        // Mega menu items
+        &.mega-menu {
+          .submenu {
+            width: 100%;
+            left: 0;
+            right: 0;
+            padding: 25px;
+            border-bottom-left-radius: 0.25rem;
+            border-bottom-right-radius: 0.25rem;
+
+            .category-heading {
+              font-size: 0.875rem;
+              font-weight: 500;
+              text-align: left;
+              color: map-get($colors, 'primary');
+              padding: 1rem 0;
+              margin-bottom: 0;
+            }
+            
+            .col-group-wrapper {
+              padding: 0 1rem;
+            }
+            
+            @media (max-width: 991px) {
+              padding: 0 32px;
+              
+              .col-group-wrapper {
+                margin-left: 0;
+                margin-right: 0;
+                padding: 0;
+                
+                .col-group {
+                  padding-left: 0;
+                  padding-right: 0;
+                  margin-bottom: 20px;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  
+  // Fixed on scroll behavior
+  &.fixed-on-scroll {
+    .bottom-navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1030;
+      border-bottom: 1px solid map-get($colors, 'bg-3');
+    }
+  }
+  
+  // Mobile fixed positioning
+  @media (max-width: 991px) {
+    position: fixed;
+    z-index: 1030;
+    top: 0;
+    left: 0;
+    right: 0;
+  }
+}
+
+// -----------------------------------------------------------------------------
+// Dropdown Animation (for submenus)
+// -----------------------------------------------------------------------------
+
+@keyframes dropdownAnimation {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -30px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.dropdownAnimation {
+  animation: dropdownAnimation 0.25s ease 1;
+}

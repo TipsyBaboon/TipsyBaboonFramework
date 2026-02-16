@@ -1,0 +1,44 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>TipsyBaboon.Core</RootNamespace>
+    <AssemblyName>TipsyBaboon.Core</AssemblyName>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>TipsyBaboon.Core</PackageId>
+    <Version>1.1.0</Version>
+    <Authors>Tipsy Baboon</Authors>
+    <Company>Tipsy Baboon</Company>
+    <Product>TipsyBaboon Framework</Product>
+    <Description>Infrastructure contracts and base services for the TipsyBaboon RAD framework. Stop rewriting infrastructure and focus on your business domain. Provides model registry, attribute-based configuration, lifecycle hooks, and extensible storage contracts.</Description>
+    <Copyright>Copyright © 2026 Tipsy Baboon</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl></PackageProjectUrl>
+    <RepositoryUrl></RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>tipsybaboon;rad;framework;asp.net-core;code-first;infrastructure;entity-framework;rapid-development</PackageTags>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Interfaces\**" />
+    <EmbeddedResource Remove="Interfaces\**" />
+    <None Remove="Interfaces\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="icon.png" Pack="true" PackagePath="" />
+    <None Include="README.md" Pack="true" PackagePath="" Condition="Exists('README.md')" />
+  </ItemGroup>
+
+</Project>

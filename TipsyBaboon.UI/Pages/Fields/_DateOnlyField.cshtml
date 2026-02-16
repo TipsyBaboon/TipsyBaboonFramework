@@ -1,0 +1,17 @@
+@model TipsyBaboon.UI.Models.FieldViewModel<DateOnly?>
+@using TipsyBaboon.UI.Rendering
+
+@{
+    var name = Model.Column.PropertyName;
+    var elementId = Model.ElementId;
+    var inputName = Model.InputName;
+    string dateValue = "";
+    if (Model.Value.HasValue)
+    {
+        dateValue = Model.Value.Value.ToString("yyyy-MM-dd");
+    }
+    var isReadOnly = ValidationHelper.IsReadOnly(Model.Column);
+    var validationAttrs = ValidationHelper.FormatValidationAttributes(Model.Column);
+}
+
+<input type="date" id="@elementId" name="@inputName" value="@dateValue" class="form-control" @(isReadOnly ? "readonly" : "") @Html.Raw(validationAttrs) @Html.Raw(Model.FieldContextAttribute) />

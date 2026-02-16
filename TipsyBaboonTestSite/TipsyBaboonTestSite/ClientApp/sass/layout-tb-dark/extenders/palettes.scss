@@ -1,0 +1,86 @@
+﻿@use '../variables/colors' as *;
+
+$paletteTypes: ( 'primary', 'secondary', 'success', 'danger', 'warning', 'info', 'light');
+$bgs: ( 'bg-0', 'bg-1', 'bg-2', 'bg-3', 'bg-4');
+
+@each $color in $paletteTypes {
+
+    // use this for outline hover
+    .palette-#{$color} {
+        background-color: map-get($colors, $color);
+        @if $color == 'secondary' or $color == 'light' {
+            color: map-get($colors, 'bg-0');
+        } @else {
+            color: map-get($colors, 'fg-0');
+        }
+    }
+    .palette-#{$color}-bright {
+        background-color: map-get($colors, '#{$color}-bright');
+        @if $color == 'secondary' or $color == 'light' {
+            color: map-get($colors, 'bg-0');
+        } @else {
+            color: map-get($colors, 'fg-0');
+        }
+    }
+    .palette-#{$color}-dark {
+        background-color: map-get($colors, '#{$color}-dark');
+        @if $color == 'secondary' or $color == 'light' {
+            color: map-get($colors, 'bg-0');
+        } @else {
+            color: map-get($colors, 'fg-0');
+        }
+    }
+
+        .palette-#{$color}-outline {
+            background-color: transparent;
+            color: map-get($colors, $color);
+            border: 1px solid map-get($colors, $color);
+        }
+
+        .palette-#{$color}-clickable {
+            background-color: map-get($colors, $color);
+            @if $color == 'secondary' or $color == 'light' {
+                color: map-get($colors, 'bg-0');
+            } @else {
+                color: map-get($colors, 'fg-0');
+            }
+        }
+
+        .palette-#{$color}-gradient {
+            background: linear-gradient(to bottom, map-get($colors, $color), map-get($colors, '#{$color}-dark'));
+            @if $color == 'secondary' or $color == 'light' {
+                color: map-get($colors, 'bg-0');
+            } @else {
+                color: map-get($colors, 'fg-0');
+            }
+            border-color: map-get($colors, $color);
+        }
+
+        .palette-#{$color}-hover {
+            background: linear-gradient(to bottom, map-get($colors, '#{$color}-bright'), map-get($colors, $color));
+            @if $color == 'secondary' or $color == 'light' {
+                color: map-get($colors, 'bg-0');
+            } @else {
+                color: map-get($colors, 'fg-0');
+            }
+        }
+
+        .palette-#{$color}-disabled {
+            background: radial-gradient(ellipse at center, map-get($colors, $color), map-get($colors, '#{$color}-dark'));
+            color: map-get($colors, 'fg-3');
+            opacity: 0.6;
+        }
+            .palette-#{$color}-outline-disabled {
+                background-color: transparent;
+                color: map-get($colors, '#{$color}-dark');
+                border: 1px solid map-get($colors, '#{$color}-dark');
+            }
+}
+
+@each $bg in $bgs {
+    .palette-#{$bg} {
+        background-color: map-get($colors, $bg);
+        color: map-get($colors, 'fg-0');
+    }
+
+}

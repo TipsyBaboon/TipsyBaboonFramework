@@ -1,0 +1,13 @@
+@model TipsyBaboon.UI.Models.FieldViewModel<long?>
+@using TipsyBaboon.UI.Rendering
+
+@{
+    var name = Model.Column.PropertyName;
+    var elementId = Model.ElementId;
+    var inputName = Model.InputName;
+    var val = Model.Value?.ToString() ?? "";
+    var isReadOnly = ValidationHelper.IsReadOnly(Model.Column);
+    var validationAttrs = ValidationHelper.FormatValidationAttributes(Model.Column);
+}
+
+<input type="tel" id="@elementId" name="@inputName" value="@val" class="form-control" pattern="-?[0-9]*" inputmode="numeric" @(isReadOnly ? "readonly" : "") @Html.Raw(validationAttrs) @Html.Raw(Model.FieldContextAttribute) />

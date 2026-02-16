@@ -1,0 +1,83 @@
+################################################################################
+# GitHub-specific .gitignore (excludes private test sites)
+# Use this when pushing to GitHub to exclude private projects
+################################################################################
+
+# Include all base .gitignore patterns
+.vs/
+.vscode/
+.idea/
+bin/
+obj/
+**/bin/
+**/obj/
+artifacts/
+publish/
+packages/
+*.nupkg
+*.snupkg
+TestResults/
+coverage/
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+.DS_Store
+Thumbs.db
+*.log
+*.sqlite
+*.db
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+
+# GITHUB EXCLUSIONS - Private projects/config
+TipsyBaboonTestSite/
+TipsyBaboonFishing/
+TipsyBaboonTemplate/
+ai-test/
+fishing-log-project/
+agents/
+
+# Private configuration files
+client_secret_*.json
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/appsettings.*.json
+!**/appsettings.json
+
+# Reports and diagnostics
+report-*.json
+unused-usings*.json
+
+# Private tools/scripts with sensitive data
+tools/compute-guid.ps1
+tools/reset-database.sql
+tools/seed-*.sql
+tools/rebrand-*.ps1
+
+# Ignore generated files that may be produced by the build/test tools
+*.dotCover
+*.ncrunch*
+coverage.*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Ignore VSIX and packaging output
+*.vsix
+
+# Ignore compiled binaries (extra safety)
+*.exe
+*.dll
+*.so
+*.dylib
+*.pdb
+
+# End of .gitignore
+

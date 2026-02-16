@@ -1,0 +1,11 @@
+@page
+@model TipsyBaboon.UI.Areas.Identity.Pages.Account.AccessDeniedModel
+@{
+    ViewData["Title"] = "Access denied";
+    Layout = Model.LayoutPage;
+}
+
+<header>
+    <h1 class="text-danger">@ViewData["Title"]</h1>
+    <p class="text-danger">You do not have access to this resource.</p>
+</header>

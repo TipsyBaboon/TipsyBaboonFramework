@@ -1,0 +1,99 @@
+################################################################################
+# Git ignore for TipsyBaboon workspace (Azure DevOps)
+# More relaxed for private development - test sites kept locally
+################################################################################
+
+# User-specific files
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.VC.db
+
+# Visual Studio / Rider / VS Code
+.vs/
+.vscode/
+.idea/
+
+# Build outputs
+bin/
+obj/
+**/bin/
+**/obj/
+artifacts/
+
+# Publish / deployment
+publish/
+
+# NuGet
+packages/
+*.nupkg
+*.snupkg
+
+# Test results
+TestResults/
+coverage/
+
+# Node/npm
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+
+# Sensitive configuration files
+client_secret_*.json
+**/appsettings.Development.json
+**/appsettings.Production.json
+**/appsettings.Staging.json
+
+# Private test sites and templates
+TipsyBaboonTestSite/
+TipsyBaboonTemplate/
+TipsyBaboonFishing/
+
+# Agent documentation and workspaces
+agents/
+
+# Private/temporary tools and scripts
+tools/compute-guid.ps1
+tools/reset-database.sql
+tools/seed-*.sql
+tools/rebrand-*.ps1
+
+# Build reports and diagnostics
+report-*.json
+unused-usings*.json
+
+# Ignore generated files that may be produced by the build/test tools
+*.dotCover
+*.ncrunch*
+coverage.*
+
+# Temporary files
+*.tmp
+*.temp
+
+# Ignore VSIX and packaging output
+*.vsix
+
+# Ignore compiled binaries (extra safety)
+*.exe
+*.dll
+*.so
+*.dylib
+*.pdb
+
+# End of .gitignore
+
+

@@ -1,0 +1,87 @@
+
+
+// Light Theme - Foreground progression (darkest to lighter) - INVERTED from dark theme
+$fg-0: #271816; // Darkest - primary text (inverted from dark theme bg-0)
+$fg-1: #322120; // Secondary text (inverted from dark theme bg-1)
+$fg-2: #3D2522; // Muted text (inverted from dark theme bg-2)
+$fg-3: #52443F; // Most muted - disabled/subtle (inverted from dark theme bg-3)
+$bg-0: #6B5B55; // Lightest background (inverted from dark theme bg-4)
+
+// Light Theme - Background progression (lightest to darker) - INVERTED from dark theme
+$bg-4: #F5E6D3; // Base background - lightest (inverted from dark theme fg-0)
+$bg-3: #E0D1C0; // Card headers, table headers (inverted from dark theme fg-1)
+$bg-2: #CABDAD; // Cards/surfaces (inverted from dark theme fg-2)
+$bg-1: #B5A89A; // Elevated/hover states - darkest bg (inverted from dark theme fg-3)
+
+// Semantic Colors - Primary (Teal/Green)
+$primary-dark: #1F4040; // Darkened
+$primary: #2D5A5A; // Base
+$primary-bright: #3D7A7A; // Brightened
+
+// Semantic Colors - Secondary (Gold)
+$secondary-dark: #CC9203; // Darkened
+$secondary: #DCC9AA; // Base
+$secondary-bright: #D4C4A8; // Brightened
+
+// Semantic Colors - Danger
+$danger-dark: #A82626; // Darkened
+$danger: #D32F2F; // Base
+$danger-bright: #E57373; // Brightened
+
+// Semantic Colors - Success
+$success-dark: #2D6B2A; // Darkened
+$success: #3C9038; // Base
+$success-bright: #66BB6A; // Brightened
+
+// Semantic Colors - Warning
+$warning-dark: #CC9203; // Darkened
+$warning: #FEB604; // Base
+$warning-bright: #FFCA3A; // Brightened
+
+// Semantic Colors - Info
+$info-dark: #3270B8; // Darkened
+$info: #4A90E2; // Base
+$info-bright: #64B5F6; // Brightened
+
+// Semantic Colors - Light
+$light-dark: #B5A89A;
+$light: #F5E6D3;
+$light-bright: #FFFFFF;
+
+// =============================================================================
+// Unified Color Map
+// =============================================================================
+
+$colors: (
+  'bg-0': $bg-0,
+  'bg-1': $bg-1,
+  'bg-2': $bg-2,
+  'bg-3': $bg-3,
+  'bg-4': $bg-4,
+  'fg-0': $fg-0,
+  'fg-1': $fg-1,
+  'fg-2': $fg-2,
+  'fg-3': $fg-3,
+  'primary': $primary,
+  'primary-dark': $primary-dark,
+  'primary-bright': $primary-bright,
+  'secondary': $secondary,
+  'secondary-dark': $secondary-dark,
+  'secondary-bright': $secondary-bright,
+  'success': $success,
+  'success-dark': $success-dark,
+  'success-bright': $success-bright,
+  'danger': $danger,
+  'danger-dark': $danger-dark,
+  'danger-bright': $danger-bright,
+  'warning': $warning,
+  'warning-dark': $warning-dark,
+  'warning-bright': $warning-bright,
+  'info': $info,
+  'info-dark': $info-dark,
+  'info-bright': $info-bright,
+  'light': $light,
+  'light-dark': $light-dark,
+  'light-bright': $light-bright
+);
+

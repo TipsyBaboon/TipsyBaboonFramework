@@ -1,0 +1,78 @@
+@model TipsyBaboon.UI.Models.FieldViewModel<Models.Northwind.ContactInfo>
+@using TipsyBaboon.Core.Data
+@using TipsyBaboon.UI.Rendering
+@using System.Text.Json
+
+@{
+    var elementId = Model.ElementId;
+    var inputName = Model.InputName;
+    var isGridContext = Model.IsGridContext;
+    var isReadOnly = ValidationHelper.IsReadOnly(Model.Column);
+    var validationAttrs = ValidationHelper.FormatValidationAttributes(Model.Column);
+    
+    var currentValue = Model.Value ?? new Models.Northwind.ContactInfo();
+    var jsonValue = JsonSerializer.Serialize(currentValue);
+    
+    var displayValue = string.Join(", ", new[] {
+        currentValue.City,
+        currentValue.Phone,
+        currentValue.Fax,
+        currentValue.Country
+    }.Where(x => !string.IsNullOrWhiteSpace(x)));
+}
+
+<input type="hidden" 
+       id="@elementId" 
+       name="@inputName" 
+       value="@jsonValue" 
+       data-field="@Model.Column.PropertyName"
+       @Html.Raw(validationAttrs)
+       @Html.Raw(Model.FieldContextAttribute) />
+
+@if (isGridContext)
+{
+    <span class="contact-info-display">@displayValue</span>
+}
+else
+{
+    <div class="contact-info-inputs">
+        <div class="row g-3">
+            <div class="col-md-6">
+                <label class="form-label">City</label>
+                <input type="text" 
+                       class="form-control contact-info-input" 
+                       data-target="@elementId"
+                       data-property="city"
+                       value="@currentValue.City"
+                       @(isReadOnly ? "disabled" : "") />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Country</label>
+                <input type="text" 
+                       class="form-control contact-info-input" 
+                       data-target="@elementId"
+                       data-property="country"
+                       value="@currentValue.Country"
+                       @(isReadOnly ? "disabled" : "") />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Phone</label>
+                <input type="text" 
+                       class="form-control contact-info-input" 
+                       data-target="@elementId"
+                       data-property="phone"
+                       value="@currentValue.Phone"
+                       @(isReadOnly ? "disabled" : "") />
+            </div>
+            <div class="col-md-6">
+                <label class="form-label">Fax</label>
+                <input type="text" 
+                       class="form-control contact-info-input" 
+                       data-target="@elementId"
+                       data-property="fax"
+                       value="@currentValue.Fax"
+                       @(isReadOnly ? "disabled" : "") />
+            </div>
+        </div>
+    </div>
+}

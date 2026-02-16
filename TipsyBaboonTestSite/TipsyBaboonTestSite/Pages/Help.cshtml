@@ -1,0 +1,1065 @@
+@page
+@model TipsyBaboonTestSite.Pages.HelpModel
+@{
+    ViewData["Title"] = "Framework Help";
+}
+
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-lg-3 col-md-4">
+            <div class="card sticky-top" style="top: 1rem;">
+                <div class="card-header">
+                    <h5 class="mb-0">Table of Contents</h5>
+                </div>
+                <div class="list-group list-group-flush">
+                    <a href="#getting-started" class="list-group-item list-group-item-action">Getting Started</a>
+                    <a href="#models-attributes" class="list-group-item list-group-item-action">Models & Attributes</a>
+                    <a href="#field-renderer" class="list-group-item list-group-item-action">Field Rendering & Custom Fields</a>
+                    <a href="#javascript-patterns" class="list-group-item list-group-item-action">JavaScript Patterns & Events</a>
+                    <a href="#api-querying" class="list-group-item list-group-item-action">API Querying & Filtering</a>
+                    <a href="#permissions" class="list-group-item list-group-item-action">Permissions & Authorization</a>
+                    <a href="#advanced-topics" class="list-group-item list-group-item-action">Advanced Topics</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-9 col-md-8">
+            <h1 class="mb-4">TipsyBaboon Framework Help</h1>
+            <p class="lead">Complete guide to building applications with the TipsyBaboon RAD framework</p>
+            
+            <hr class="my-4"/>
+            
+            <!-- Getting Started Section -->
+            <section id="getting-started" class="mb-5">
+                <h2>Getting Started</h2>
+                <p>TipsyBaboon is a Rapid Application Development (RAD) framework for ASP.NET Core that generates database schemas, UI pages, and APIs from your C# model classes.</p>
+                
+                <h3 class="mt-4">Installation</h3>
+                <p>Install the framework packages from NuGet:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>dotnet add package TipsyBaboon.Core
+dotnet add package TipsyBaboon.SqlServer
+dotnet add package TipsyBaboon.UI</code></pre>
+                    </div>
+                </div>
+                <p class="mt-2">Or via Visual Studio NuGet Package Manager, search for: <strong>TipsyBaboon.Core</strong>, <strong>TipsyBaboon.SqlServer</strong>, and <strong>TipsyBaboon.UI</strong></p>
+                
+                <h3 class="mt-4">Basic Setup</h3>
+                <p>In your <code>Program.cs</code>, register TipsyBaboon services:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>using TipsyBaboon.Core.Startup;
+using TipsyBaboon.SqlServer.Extensions;
+using TipsyBaboon.UI.Extensions;
+
+var builder = WebApplication.CreateBuilder(args);
+var connStr = builder.Configuration.GetConnectionString("DefaultConnection");
+
+// Register TipsyBaboon framework
+builder.Services.AddTipsyBaboon(config => 
+{
+    config.UseSqlServer();  // Database provider
+    
+    // Register your application module
+    config.AddModule("MyApp", connStr, "My Application");
+    
+    // The Governance module is required for auth/permissions
+    config.AddModule("Governance", connStr, "Core governance");
+});
+
+// Add UI services
+builder.Services.AddTipsyBaboonUI();
+
+var app = builder.Build();
+
+// Enable TipsyBaboon middleware
+app.UseTipsyBaboon();
+
+app.MapRazorPages();
+app.Run();</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Your First Model</h3>
+                <p>Create a simple model class with attributes:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>using TipsyBaboon.Core.Attributes;
+using TipsyBaboon.Core.Models;
+
+namespace MyApp.Models
+{
+    [ModuleName("MyApp")]
+    [UIEntity("Product", ModuleName = "MyApp")]
+    public class Product : TipsyBaboonModel
+    {
+        [Key]
+        public Guid Id { get; set; } = Guid.NewGuid();
+        
+        [RecordName]
+        [Required]
+        [StringLength(200)]
+        [UIDisplay(Name = "Product Name", Order = 10)]
+        public string Name { get; set; } = string.Empty;
+        
+        [UIDisplay(Name = "Description", Order = 20)]
+        public string? Description { get; set; }
+        
+        [UIDisplay(Name = "Price", Order = 30)]
+        public decimal Price { get; set; }
+        
+        [UIDisplay(Name = "In Stock", Order = 40)]
+        public bool InStock { get; set; }
+    }
+}</code></pre>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <strong>What happens automatically:</strong>
+                    <ul class="mb-0">
+                        <li>Database table <code>Product</code> is created/synchronized on startup</li>
+                        <li>UI pages generated at <code>/MyApp/Product</code> (list, create, edit, delete)</li>
+                        <li>API endpoints created at <code>/api/MyApp/Product</code></li>
+                        <li>Grid with sorting, filtering, and pagination</li>
+                        <li>Form with validation and autosave</li>
+                    </ul>
+                </div>
+                
+                <h3 class="mt-4">Seed Data</h3>
+                <p>Add seed records and invariant data during module registration:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>config.AddModule("MyApp", connStr)
+    // Seed data: inserted once at table creation
+    .AddSeed(new Product 
+    { 
+        Id = Guid.NewGuid(),
+        Name = "Sample Product",
+        Price = 19.99m,
+        InStock = true
+    })
+    // Invariant data: upserted on every startup
+    .AddInvariant(new Product
+    {
+        Id = ModelRegistry.GenerateDeterministicId("Product:Default"),
+        Name = "System Default Product",
+        IsInvariant = true
+    });</code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <hr class="my-4"/>
+            
+            <!-- Models & Attributes Section -->
+            <section id="models-attributes" class="mb-5">
+                <h2>Models & Attributes</h2>
+                <p>TipsyBaboon uses attributes to define model behavior, UI appearance, and database schema.</p>
+                
+                <h3 class="mt-4">Base Class</h3>
+                <p>All models should inherit from <code>TipsyBaboonModel</code>, which provides standard audit fields and ownership tracking:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>public abstract class TipsyBaboonModel
+{
+    public DateTime CreatedOn { get; set; }
+    public string? CreatedById { get; set; }
+    public string? CreatedByDisplayName { get; set; }
+    public DateTime? ModifiedOn { get; set; }
+    public string? ModifiedById { get; set; }
+    public string? ModifiedByDisplayName { get; set; }
+    public bool IsInvariant { get; set; }
+    public OwnershipLevel OwnershipLevel { get; set; }
+    public Guid? OwnerId { get; set; }
+    public Guid? GroupId { get; set; }
+}</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Class-Level Attributes</h3>
+                
+                <h4 class="mt-3"><code>[ModuleName("MyModule")]</code></h4>
+                <p>Associates the model with a specific module. Required for all models.</p>
+                
+                <h4 class="mt-3"><code>[UIEntity("DisplayName")]</code></h4>
+                <p>Defines UI metadata and generates pages/menus for the model.</p>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>Name</code></td>
+                                <td>string</td>
+                                <td>Display name for the entity (required)</td>
+                            </tr>
+                            <tr>
+                                <td><code>ModuleName</code></td>
+                                <td>string</td>
+                                <td>Module for this entity (defaults to TipsyBaboon.Core)</td>
+                            </tr>
+                            <tr>
+                                <td><code>PluralName</code></td>
+                                <td>string</td>
+                                <td>Plural form (defaults to Name + "s")</td>
+                            </tr>
+                            <tr>
+                                <td><code>Icon</code></td>
+                                <td>string</td>
+                                <td>Bootstrap icon class (e.g., "bi bi-box")</td>
+                            </tr>
+                            <tr>
+                                <td><code>ShowInMenu</code></td>
+                                <td>bool</td>
+                                <td>Show in navigation menu (default: true)</td>
+                            </tr>
+                            <tr>
+                                <td><code>Order</code></td>
+                                <td>int</td>
+                                <td>Menu sort order (default: 10000)</td>
+                            </tr>
+                            <tr>
+                                <td><code>HasOwnership</code></td>
+                                <td>bool</td>
+                                <td>Enable ownership/privacy levels (default: true)</td>
+                            </tr>
+                            <tr>
+                                <td><code>ScriptPaths</code></td>
+                                <td>string[]</td>
+                                <td>Model-specific JavaScript files to load</td>
+                            </tr>
+                            <tr>
+                                <td><code>StylePaths</code></td>
+                                <td>string[]</td>
+                                <td>Model-specific CSS files to load</td>
+                            </tr>
+                            <tr>
+                                <td><code>DefaultSort</code></td>
+                                <td>string[]</td>
+                                <td>Default sort (e.g., ["Name|ASC", "CreatedOn|DESC"])</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h4 class="mt-3"><code>[UIGroup("GroupName")]</code></h4>
+                <p>Groups properties into collapsible sections on detail pages. Can be used multiple times.</p>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>Name</code></td>
+                                <td>Internal group identifier (required)</td>
+                            </tr>
+                            <tr>
+                                <td><code>Title</code></td>
+                                <td>Display title for the group</td>
+                            </tr>
+                            <tr>
+                                <td><code>Order</code></td>
+                                <td>Display order of groups</td>
+                            </tr>
+                            <tr>
+                                <td><code>Collapsible</code></td>
+                                <td>Allow collapsing the section</td>
+                            </tr>
+                            <tr>
+                                <td><code>InitiallyCollapsed</code></td>
+                                <td>Start collapsed</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="card bg-light mt-3">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>[UIGroup("Basic", Title = "Basic Information", Order = 10)]
+[UIGroup("Advanced", Title = "Advanced Options", Order = 20, 
+         Collapsible = true, InitiallyCollapsed = true)]
+public class Product : TipsyBaboonModel
+{
+    [UIDisplay(GroupName = "Basic", Order = 10)]
+    public string Name { get; set; }
+    
+    [UIDisplay(GroupName = "Advanced", Order = 10)]
+    public string TechnicalSpecs { get; set; }
+}</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Property-Level Attributes</h3>
+                
+                <h4 class="mt-3"><code>[UIDisplay]</code></h4>
+                <p>Controls how properties appear in the UI.</p>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>Name</code></td>
+                                <td>Label text (defaults to property name)</td>
+                            </tr>
+                            <tr>
+                                <td><code>Description</code></td>
+                                <td>Help text shown below field</td>
+                            </tr>
+                            <tr>
+                                <td><code>GroupName</code></td>
+                                <td>Which UIGroup to place in</td>
+                            </tr>
+                            <tr>
+                                <td><code>Order</code></td>
+                                <td>Display order within group (-1 excludes from default layout)</td>
+                            </tr>
+                            <tr>
+                                <td><code>ColumnSize</code></td>
+                                <td>Bootstrap column width (1-12, default: 6)</td>
+                            </tr>
+                            <tr>
+                                <td><code>ShowInList</code></td>
+                                <td>Show in grid view (default: false)</td>
+                            </tr>
+                            <tr>
+                                <td><code>ShowInDetail</code></td>
+                                <td>Show in detail/edit form (default: true)</td>
+                            </tr>
+                            <tr>
+                                <td><code>ShowLabel</code></td>
+                                <td>Show field label (default: true)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h4 class="mt-3"><code>[RecordName]</code></h4>
+                <p>Marks a property as the record name/identifier for display in breadcrumbs and lookups.</p>
+                
+                <h4 class="mt-3"><code>[FieldControl("ControlName")]</code></h4>
+                <p>Specifies a custom UI control for the property. Built-in controls:</p>
+                <ul>
+                    <li><code>TextArea</code> - Multi-line text input</li>
+                    <li><code>RichText</code> - HTML editor</li>
+                    <li><code>Checkbox</code> - Boolean checkbox</li>
+                    <li><code>Select</code> - Dropdown</li>
+                    <li><code>ForeignKeyLookup</code> - Related record picker</li>
+                    <li><code>CollectionGrid</code> - Child records grid</li>
+                    <li><code>PermissionLevel</code> - Permission level selector</li>
+                </ul>
+                
+                <p class="mt-2">Optional <code>ConfigJson</code> property for control configuration:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>[FieldControl("CollectionGrid", 
+    ConfigJson = @@"{""EditableColumns"":[""Quantity"",""Price""],""MaxHeight"":""400px""}")]
+public List&lt;OrderLine&gt; OrderLines { get; set; }</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Standard Validation Attributes</h3>
+                <p>TipsyBaboon honors standard .NET validation attributes:</p>
+                <ul>
+                    <li><code>[Required]</code> - Field is mandatory</li>
+                    <li><code>[StringLength(max)]</code> - String length constraint</li>
+                    <li><code>[MaxLength(n)]</code> - Maximum length</li>
+                    <li><code>[Range(min, max)]</code> - Numeric range</li>
+                    <li><code>[EmailAddress]</code> - Email format validation</li>
+                    <li><code>[Phone]</code> - Phone number format</li>
+                    <li><code>[Url]</code> - URL format</li>
+                    <li><code>[RegularExpression("pattern")]</code> - Custom regex</li>
+                </ul>
+            </section>
+            
+            <hr class="my-4"/>
+            
+            <!-- Field Renderer & Custom Fields Section -->
+            <section id="field-renderer" class="mb-5">
+                <h2>Field Renderer & Custom Fields</h2>
+                <p>The <code>FieldRenderer</code> engine maps CLR types to Razor partial views, enabling custom UI controls for any property type.</p>
+                
+                <h3 class="mt-4">Built-In Field Types</h3>
+                <p>TipsyBaboon provides automatic rendering for common types:</p>
+                <ul>
+                    <li><code>string</code> → Text input (_TextField.cshtml)</li>
+                    <li><code>bool</code> → Toggle switch (_BooleanField.cshtml)</li>
+                    <li><code>int, long, decimal</code> → Numeric input (_NumericField.cshtml)</li>
+                    <li><code>DateTime</code> → Date/time picker (_DateField.cshtml)</li>
+                    <li><code>Enum</code> → Dropdown (_EnumField.cshtml)</li>
+                    <li><code>Guid</code> (foreign key) → Lookup modal (_ForeignKeyLookupField.cshtml)</li>
+                    <li><code>List&lt;T&gt;</code> → Collection grid (_CollectionField.cshtml)</li>
+                </ul>
+                
+                <h3 class="mt-4">Registering Custom Field Renderers</h3>
+                <p>Register custom renderers in Program.cs using <code>FieldRenderer.Register&lt;T&gt;</code>:</p>
+                
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>// Custom field for Color type
+FieldRenderer.Register&lt;Color&gt;(new FieldRegistrationParams&lt;Color&gt;
+{
+    PartialPath = "~/Pages/Fields/_ColorPickerField.cshtml",
+    GridAlignment = GridAlignment.Center,
+    RequiredScripts = new List&lt;string&gt; { "/js/color-picker.js" }
+});
+
+// Custom field for specific control name
+FieldRenderer.Register&lt;string&gt;(new FieldRegistrationParams&lt;string&gt;
+{
+    ControlName = "RichText",
+    PartialPath = "~/Pages/Fields/_RichTextEditorField.cshtml",
+    RequiredScripts = new List&lt;string&gt; { "https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" }
+});</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Creating Custom Field Partials</h3>
+                <p>Field partials receive a <code>FieldViewModel&lt;T&gt;</code> model with these key properties:</p>
+                <ul>
+                    <li><code>Model.Value</code> - The property value (typed as T)</li>
+                    <li><code>Model.Column</code> - Column metadata (name, validation, display settings)</li>
+                    <li><code>Model.ElementId</code> - Unique HTML element ID</li>
+                    <li><code>Model.InputName</code> - Form input name for model binding</li>
+                    <li><code>Model.FieldContextAttribute</code> - Data attributes for JS hooks</li>
+                    <li><code>Model.IsGridContext</code> - True when rendering in editable grid</li>
+                </ul>
+                
+                <p class="mt-3">Example custom field partial:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>@@model TipsyBaboon.UI.Models.FieldViewModel&lt;Color&gt;
+@@using TipsyBaboon.UI.Rendering
+
+@@{
+    var elementId = Model.ElementId;
+    var inputName = Model.InputName;
+    var colorValue = Model.Value?.ToHexString() ?? "#000000";
+    var isReadOnly = ValidationHelper.IsReadOnly(Model.Column);
+    var validationAttrs = ValidationHelper.FormatValidationAttributes(Model.Column);
+}
+
+&lt;div class="color-picker-wrapper"&gt;
+    &lt;input type="color" 
+           id="@@elementId" 
+           name="@@inputName" 
+           value="@@colorValue" 
+           class="form-control" 
+           @@(isReadOnly ? "readonly" : "") 
+           @@Html.Raw(validationAttrs) 
+           @@Html.Raw(Model.FieldContextAttribute) /&gt;
+&lt;/div&gt;</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Transform Functions</h3>
+                <p>Use <code>TransformFunc</code> to modify values before rendering:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>FieldRenderer.Register&lt;decimal&gt;(new FieldRegistrationParams&lt;decimal&gt;
+{
+    ControlName = "Currency",
+    PartialPath = "~/Pages/Fields/_CurrencyField.cshtml",
+    TransformFunc = (model) =&gt;
+    {
+        // Return anonymous object with extra data for the partial
+        return new
+        {
+            Value = model.Value,
+            FormattedValue = model.Value.ToString("C"),
+            CurrencySymbol = "$"
+        };
+    }
+});</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Script Dependencies</h3>
+                <p>Declare JavaScript dependencies via <code>RequiredScripts</code> using full paths. The framework automatically loads scripts when fields are rendered:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>// Consumer app scripts (from your wwwroot folder)
+RequiredScripts = new List&lt;string&gt; { "/js/custom-editor.js" }
+
+// Framework scripts (from NuGet package)
+RequiredScripts = new List&lt;string&gt; { "/_content/TipsyBaboon.UI/js/tipsybaboon-permission-level.js" }
+
+// External CDN scripts
+RequiredScripts = new List&lt;string&gt; { "https://cdn.example.com/library.js" }</code></pre>
+                    </div>
+                </div>
+                <p class="mt-2"><strong>Note:</strong> NuGet packages serve static files from <code>/_content/{PackageName}/</code>, so framework scripts use the <code>/_content/TipsyBaboon.UI/</code> prefix.</p>
+            </section>
+            
+            <hr class="my-4"/>
+            
+            <!-- JavaScript Patterns & Events Section -->
+            <section id="javascript-patterns" class="mb-5">
+                <h2>JavaScript Patterns & Events</h2>
+                <p>TipsyBaboon provides JavaScript events and APIs for custom behavior on detail/create/index pages.</p>
+                
+                <h3 class="mt-4">Core Events</h3>
+                
+                <h4 class="mt-3"><code>form:ready</code></h4>
+                <p>Fired when a form is fully initialized and ready for interaction. This is the primary hook for initializing custom field controls.</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>document.addEventListener('form:ready', function(e) {
+    var $form = e.target.closest ? e.target.closest('[record-form]') : null;
+    if (!$form) return;
+
+    // Check which module/model this form belongs to
+    var module = $form.getAttribute('data-module');
+    var model = $form.getAttribute('data-model');
+    
+    if (module === 'Governance' && model === 'ModelRecord') {
+        // Initialize custom controls for this specific model
+        initializeCustomControls($form);
+    }
+});</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">TipsyBaboonForm API</h3>
+                <p>Each form has a <code>TipsyBaboonForm</code> instance accessible via jQuery data:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>// Get the form instance
+var form = $('[record-form]').data('tipsyBaboonForm');
+
+// Trigger a save programmatically
+form.saveForm();</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Field Context Attributes</h3>
+                <p>Every field rendered by the framework includes <code>data-field</code> attribute. Parent form elements include additional context:</p>
+                <ul>
+                    <li><code>data-field="{PropertyName}"</code> - On field elements to mark as form field with property name</li>
+                    <li><code>data-module</code> - On parent form element (module name)</li>
+                    <li><code>data-model</code> - On parent form element (model name)</li>
+                    <li><code>data-record-keys</code> - On parent form element (JSON of primary key values)</li>
+                </ul>
+                
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>// Find a specific field by property name
+var emailField = document.querySelector('[data-field="Email"]');
+
+// Find all fields for a specific model (check parent form)
+var form = document.querySelector('[data-module="Governance"][data-model="Contact"]');
+var fields = form.querySelectorAll('[data-field]');</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Model-Specific Scripts</h3>
+                <p>Load model-specific JavaScript using the <code>ScriptPaths</code> property in <code>[UIEntity]</code>. Use full paths from your app's wwwroot:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>[UIEntity("Contact", 
+    ScriptPaths = new[] { "/js/contact-validation.js", "/js/contact-map.js" })]
+public class Contact : TipsyBaboonModel
+{
+    // ...
+}</code></pre>
+                    </div>
+                </div>
+                <p class="mt-2">Scripts are automatically loaded when the model's pages are rendered. Place these files in your app's <code>wwwroot/js/</code> folder.</p>
+                
+                <h3 class="mt-4">Dynamic UI Updates</h3>
+                <p>Re-trigger form:ready after dynamic DOM changes to reinitialize controls:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>// After adding/removing elements dynamically
+var $form = document.querySelector('[record-form]');
+$form.dispatchEvent(new CustomEvent('form:ready', { bubbles: true }));</code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <hr class="my-4"/>
+            
+            <!-- API Querying & Filtering Section -->
+            <section id="api-querying" class="mb-5">
+                <h2>API Querying & Filtering</h2>
+                <p>TipsyBaboon provides a powerful generic API for querying models with filtering, sorting, and includes.</p>
+                
+                <h3 class="mt-4">API Endpoints</h3>
+                <p>Every model registered with <code>[UIEntity]</code> gets automatic CRUD API endpoints:</p>
+                <ul>
+                    <li><code>GET /api/{module}/{model}</code> - Query records (paged)</li>
+                    <li><code>GET /api/{module}/{model}/{id}</code> - Get single record</li>
+                    <li><code>POST /api/{module}/{model}</code> - Create record</li>
+                    <li><code>PUT /api/{module}/{model}/{id}</code> - Update record</li>
+                    <li><code>DELETE /api/{module}/{model}/{id}</code> - Delete record</li>
+                </ul>
+                
+                <h3 class="mt-4">PagedRequest</h3>
+                <p>Use <code>PagedRequest</code> to build complex queries with filtering, sorting, and navigation includes:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>var request = PagedRequest.Create(page: 1, pageSize: 50)
+    .WithFilter(FilterCriteria.Equals("Status", "Active"))
+    .WithFilter(FilterCriteria.GreaterThan("CreatedOn", DateTime.UtcNow.AddDays(-30)))
+    .WithSort(SortCriteria.Desc("CreatedOn"))
+    .WithInclude("Owner")
+    .WithInclude("CreatedByUser");
+
+var result = await store.GetPagedAsync(request);</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">FilterCriteria</h3>
+                <p>Build filters using fluent static methods:</p>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Method</th>
+                                <th>Operator</th>
+                                <th>Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>Equals</code></td>
+                                <td>=</td>
+                                <td><code>FilterCriteria.Equals("Status", "Active")</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>NotEquals</code></td>
+                                <td>!=</td>
+                                <td><code>FilterCriteria.NotEquals("IsDeleted", true)</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>Contains</code></td>
+                                <td>LIKE %value%</td>
+                                <td><code>FilterCriteria.Contains("Name", "smith")</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>StartsWith</code></td>
+                                <td>LIKE value%</td>
+                                <td><code>FilterCriteria.StartsWith("Email", "admin")</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>EndsWith</code></td>
+                                <td>LIKE %value</td>
+                                <td><code>FilterCriteria.EndsWith("Email", ".gov")</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>GreaterThan</code></td>
+                                <td>&gt;</td>
+                                <td><code>FilterCriteria.GreaterThan("Price", 100)</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>GreaterThanOrEqual</code></td>
+                                <td>&gt;=</td>
+                                <td><code>FilterCriteria.GreaterThanOrEqual("Quantity", 10)</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>LessThan</code></td>
+                                <td>&lt;</td>
+                                <td><code>FilterCriteria.LessThan("Age", 18)</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>LessThanOrEqual</code></td>
+                                <td>&lt;=</td>
+                                <td><code>FilterCriteria.LessThanOrEqual("Stock", 5)</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>In</code></td>
+                                <td>IN (list)</td>
+                                <td><code>FilterCriteria.In("Status", new[] { "Active", "Pending" })</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>NotIn</code></td>
+                                <td>NOT IN (list)</td>
+                                <td><code>FilterCriteria.NotIn("Category", new[] { "Archived" })</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>Between</code></td>
+                                <td>BETWEEN</td>
+                                <td><code>FilterCriteria.Between("Price", 10, 100)</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>IsNull</code></td>
+                                <td>IS NULL</td>
+                                <td><code>FilterCriteria.IsNull("DeletedOn")</code></td>
+                            </tr>
+                            <tr>
+                                <td><code>IsNotNull</code></td>
+                                <td>IS NOT NULL</td>
+                                <td><code>FilterCriteria.IsNotNull("ApprovedOn")</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3 class="mt-4">Logical Operators (AND/OR)</h3>
+                <p>Combine filters with logical operators:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>var request = PagedRequest.Create()
+    .WithFilter(new FilterCriteria 
+    { 
+        PropertyName = "Status", 
+        Operator = FilterOperator.Equals, 
+        Value = "Active", 
+        Logic = LogicalOperator.And 
+    })
+    .WithFilter(new FilterCriteria 
+    { 
+        PropertyName = "Priority", 
+        Operator = FilterOperator.Equals, 
+        Value = "High", 
+        Logic = LogicalOperator.Or  // (Status = Active) OR (Priority = High)
+    });</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">SortCriteria</h3>
+                <p>Add sorting to queries:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>var request = PagedRequest.Create()
+    .WithSort(SortCriteria.Desc("CreatedOn"))    // Primary sort
+    .WithSort(SortCriteria.Asc("Name"));         // Secondary sort</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Navigation Property Includes</h3>
+                <p>Eagerly load related entities to avoid N+1 queries:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>var request = PagedRequest.Create()
+    .WithInclude("Owner")              // Simple navigation
+    .WithInclude("CreatedByUser.Roles") // Nested navigation
+    .WithInclude("OrderLines.Product"); // Collection navigation
+
+// Alternatively, set UseAutoIncludes to load all [IncludeNavigation] properties
+request.UseAutoIncludes = true;</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">JavaScript API Calls</h3>
+                <p>Call the API from JavaScript using <code>TipsyBaboon.ApiRequest</code>:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>// Query records
+TipsyBaboon.ApiRequest('/api/Governance/Contact', {
+    method: 'POST',
+    body: JSON.stringify({
+        Page: 1,
+        PageSize: 50,
+        Filters: [
+            { PropertyName: 'Status', Operator: 'Equals', Value: 'Active' },
+            { PropertyName: 'Email', Operator: 'Contains', Value: 'user@@example.com' }
+        ],
+        Sorts: [
+            { PropertyName: 'Name', Direction: 'Ascending' }
+        ],
+        Includes: ['Owner']
+    })
+}).then(function(result) {
+    console.log('Total records:', result.TotalRecords);
+    console.log('Data:', result.Data);
+});
+
+// Get single record
+TipsyBaboon.ApiRequest('/api/Governance/Contact/' + contactId)
+    .then(function(contact) {
+        console.log('Contact:', contact);
+    });
+
+// Create record
+TipsyBaboon.ApiRequest('/api/Governance/Contact', {
+    method: 'POST',
+    body: JSON.stringify({ 
+        Name: 'John Doe', 
+        Email: 'john@example.com' 
+    })
+}).then(function(response) {
+    console.log('Created:', response);
+});
+
+// Update record
+TipsyBaboon.ApiRequest('/api/Governance/Contact/' + contactId, {
+    method: 'PUT',
+    body: JSON.stringify({ 
+        Id: contactId,
+        Name: 'Jane Doe', 
+        Email: 'jane@example.com' 
+    })
+});
+
+// Delete record
+TipsyBaboon.ApiRequest('/api/Governance/Contact/' + contactId, {
+    method: 'DELETE'
+});</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Complex Query Example</h3>
+                <p>Comprehensive query demonstrating multiple filters, sorts, and includes:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>var request = PagedRequest.Create(page: 1, pageSize: 100)
+    .WithFilter(FilterCriteria.Equals("IsActive", true))
+    .WithFilter(FilterCriteria.GreaterThanOrEqual("CreatedOn", startDate))
+    .WithFilter(FilterCriteria.LessThanOrEqual("CreatedOn", endDate))
+    .WithFilter(FilterCriteria.In("Category", new[] { "Electronics", "Furniture" }))
+    .WithFilter(FilterCriteria.IsNotNull("ApprovedById"))
+    .WithSort(SortCriteria.Desc("Priority"))
+    .WithSort(SortCriteria.Asc("Name"))
+    .WithInclude("Owner")
+    .WithInclude("CreatedByUser")
+    .WithInclude("OrderLines.Product");
+
+var result = await store.GetPagedAsync(request);
+Console.WriteLine($"Found {result.TotalRecords} matching records");</code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <hr class="my-4"/>
+            
+            <!-- Permissions & Authorization Section -->
+            <section id="permissions" class="mb-5">
+                <h2>Permissions & Authorization</h2>
+                <p>TipsyBaboon provides role-based permissions with ownership levels and privilege-based field access.</p>
+                
+                <h3 class="mt-4">Permission Levels</h3>
+                <p>Each role has one of four permission levels per model:</p>
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Level</th>
+                                <th>Description</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>None</code></td>
+                                <td>No access to the model</td>
+                            </tr>
+                            <tr>
+                                <td><code>Own</code></td>
+                                <td>Access only to records where OwnerId matches the user</td>
+                            </tr>
+                            <tr>
+                                <td><code>Group</code></td>
+                                <td>Access to records where GroupId matches user's group</td>
+                            </tr>
+                            <tr>
+                                <td><code>All</code></td>
+                                <td>Access to all records</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <h3 class="mt-4">Ownership Levels</h3>
+                <p>Records can be marked with ownership visibility levels:</p>
+                <ul>
+                    <li><code>Private</code> - Visible only to the owner</li>
+                    <li><code>Group</code> - Visible to members of the owner's group</li>
+                    <li><code>Public</code> - Visible to all users</li>
+                </ul>
+                
+                <p class="mt-2">Control allowed ownership levels per model:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>[OwnershipLevels(OwnershipLevel.Private, OwnershipLevel.Group, OwnershipLevel.Public)]
+public class Contact : TipsyBaboonModel
+{
+    // ...
+}
+
+// Framework/system models should be Public only:
+[OwnershipLevels(OwnershipLevel.Public)]
+public class SystemConfiguration : TipsyBaboonModel
+{
+    // ...
+}</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Privilege-Based Field Access</h3>
+                <p>Declare privileges on the model and require them on specific properties:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>[Privilege("ViewSensitiveData", Description = "View salary and SSN fields")]
+[Privilege("EditSalary", Description = "Edit employee salary")]
+public class Employee : TipsyBaboonModel
+{
+    public string Name { get; set; }
+    
+    [RequirePrivilege("ViewSensitiveData")]
+    public string SSN { get; set; }
+    
+    [RequirePrivilege("ViewSensitiveData")]
+    [RequirePrivilege("EditSalary")]
+    public decimal Salary { get; set; }
+}</code></pre>
+                    </div>
+                </div>
+                <p class="mt-2">Users whose roles lack the required privileges will not see these fields in the UI.</p>
+                
+                <h3 class="mt-4">Delegating Authorization</h3>
+                <p>View models can delegate permissions to their parent model:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>[AuthorizeAs("Order", ParentModuleName = "Sales")]
+public class OrderSummaryViewModel
+{
+    // Permissions checked against Order model instead of OrderSummaryViewModel
+}</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Custom Actions with Permissions</h3>
+                <p>UIAction buttons can require specific permission levels:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>[UIAction("Approve", Icon = "bi bi-check-circle", 
+    Privilege = "ApproveOrders", 
+    PermissionLevel = PermissionLevel.All)]
+public class Order : TipsyBaboonModel
+{
+    // Only users with ApproveOrders privilege and All permission level see this button
+}</code></pre>
+                    </div>
+                </div>
+            </section>
+            
+            <hr class="my-4"/>
+            
+            <!-- Advanced Topics Section -->
+            <section id="advanced-topics" class="mb-5">
+                <h2>Advanced Topics</h2>
+                
+                <h3 class="mt-4">Lifecycle Hooks</h3>
+                <p>Implement lifecycle interfaces on your models to add custom validation and side effects:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>public class Contact : TipsyBaboonModel, IModelWithSaveAction, IModelWithPostSaveAction
+{
+    public string Name { get; set; }
+    public string Email { get; set; }
+    
+    // Called before save operations (Create, Update, Delete)
+    public async Task&lt;SaveResponseType&gt; BeforeChangeAsync(
+        ActionType action, 
+        IServiceProvider serviceProvider, 
+        string? committingUser = null, 
+        CancellationToken cancellationToken = default)
+    {
+        if (action == ActionType.Create || action == ActionType.Update)
+        {
+            // Auto-uppercase names
+            Name = Name?.ToUpper();
+            
+            // Validate email uniqueness
+            var store = serviceProvider.GetRequiredService&lt;IModelStore&lt;Contact&gt;&gt;();
+            var existing = await store.GetAsync(c => c.Email == Email && c.Id != Id);
+            if (existing.Any())
+                return SaveResponseType.Error; // Abort save
+        }
+        
+        if (action == ActionType.Delete && IsInvariant)
+        {
+            return SaveResponseType.Error; // Prevent deletion of system contacts
+        }
+        
+        return SaveResponseType.Continue;
+    }
+    
+    // Called after successful save operations
+    public async Task AfterSaveAsync(
+        ActionType action, 
+        string? committingUser = null, 
+        CancellationToken cancellationToken = default)
+    {
+        if (action == ActionType.Create)
+        {
+            // Send welcome email
+            var emailService = serviceProvider.GetRequiredService&lt;IEmailService&gt;();
+            await emailService.SendWelcomeEmail(Email);
+        }
+    }
+}</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Invariant & Seed Data</h3>
+                <p>Invariant records are upserted on every startup and cannot be deleted through UI. Seed records are inserted only if missing:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>builder.AddInvariant(new SystemConfig { Id = configId, Key = "AppName", Value = "MyApp" });
+builder.AddSeed(new Category { Id = catId, Name = "Uncategorized" });</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">View Definitions</h3>
+                <p>Define SQL views for reporting and complex queries:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>[GenerateViewDefinition]
+[UIEntity("Order Summary")]
+public class OrderSummaryView
+{
+    [FromTable("Orders", "o")]
+    public Guid OrderId { get; set; }
+    
+    [FromTable("Orders", "o")]
+    public decimal Total { get; set; }
+    
+    [FromTable("Customers", "c")]
+    [Join(JoinType.Inner, "Customers", "c", "o.CustomerId = c.Id")]
+    public string CustomerName { get; set; }
+}</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Custom Page Templates</h3>
+                <p>Create alternate page layouts using Layout definitions:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>// Create a layout in Governance -&gt; Layouts
+// Set it as default via Model Record -&gt; DefaultLayoutId
+// Or load specific layout: /Governance/Contact/Detail/{id}?layoutId={layoutId}</code></pre>
+                    </div>
+                </div>
+                
+                <h3 class="mt-4">Change Tracking</h3>
+                <p>Every model gets automatic change history viewable at:</p>
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <pre class="mb-0"><code>/{module}/{model}/ChangeLog/{id}</code></pre>
+                    </div>
+                </div>
+                <p class="mt-2">Shows field-level changes with before/after values, user, and timestamp.</p>
+            </section>
+            
+            <hr class="my-4"/>
+            
+            <p class="text-center text-muted mt-5">End of Help Documentation</p>
+        </div>
+    </div>
+</div>

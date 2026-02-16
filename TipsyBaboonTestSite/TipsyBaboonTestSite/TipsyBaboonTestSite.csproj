@@ -1,0 +1,82 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>TipsyBaboonTestSite</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="10.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="10.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
+    <PackageReference Include="QRCoder" Version="1.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\TipsyBaboon.Core\TipsyBaboon.Core.csproj" />
+    <ProjectReference Include="..\..\TipsyBaboon.SqlServer\TipsyBaboon.SqlServer.csproj" />
+    <ProjectReference Include="..\..\TipsyBaboon.UI\TipsyBaboon.UI.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Exclude legacy entity pages - kept for reference only -->
+    <Content Remove="Pages\Entity.cshtml" />
+    <Content Remove="Pages\Entity.cshtml.cs" />
+    <Content Remove="Pages\Entity\Create.cshtml" />
+    <Content Remove="Pages\Entity\Create.cshtml.cs" />
+    <Content Remove="Pages\Entity\Edit.cshtml" />
+    <Content Remove="Pages\Entity\Edit.cshtml.cs" />
+    <Content Remove="Pages\Entity\View.cshtml" />
+    <Content Remove="Pages\Entity\View.cshtml.cs" />
+    
+    <!-- Exclude legacy Core entity pages that reference EntityFormModel -->
+    <Content Remove="Pages\Core\Role\Edit.cshtml" />
+    <Content Remove="Pages\Core\Role\Edit.cshtml.cs" />
+    <Content Remove="Pages\Core\User\Edit.cshtml" />
+    <Content Remove="Pages\Core\User\Edit.cshtml.cs" />
+    
+    <!-- Exclude legacy entity partials - kept for reference only -->
+    <Content Remove="Pages\Shared\_EntityForm.cshtml" />
+    <Content Remove="Pages\Shared\_EntityGrid.cshtml" />
+    <Content Remove="Pages\Shared\_EntityGridControl.cshtml" />
+    <Content Remove="Pages\Shared\_GridRowAction.cshtml" />
+    <Content Remove="Pages\Shared\_GridToolbarAction.cshtml" />
+    <Content Remove="Pages\Shared\_RelationshipGrid.cshtml" />
+    
+    <Compile Remove="Pages\Entity.cshtml.cs" />
+    <Compile Remove="Pages\Entity\Create.cshtml.cs" />
+    <Compile Remove="Pages\Entity\Edit.cshtml.cs" />
+    <Compile Remove="Pages\Entity\View.cshtml.cs" />
+    <Compile Remove="Pages\Core\Role\Edit.cshtml.cs" />
+    <Compile Remove="Pages\Core\User\Edit.cshtml.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Areas\" />
+    <Folder Include="Data\" />
+    <Folder Include="Models\" />
+  </ItemGroup>
+
+  <Target Name="NpmInstall" BeforeTargets="BeforeBuild">
+    <Exec Command="npm install" ContinueOnError="false" />
+  </Target>
+
+  <Target Name="GulpBuild" AfterTargets="Build">
+    <Exec Command="npx gulp build" ContinueOnError="false" />
+  </Target>
+
+</Project>

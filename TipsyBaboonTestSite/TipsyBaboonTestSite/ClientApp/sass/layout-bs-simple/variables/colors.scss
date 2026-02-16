@@ -1,0 +1,87 @@
+
+
+// Light Theme - Background progression (lightest to darker)
+$bg-0: #E9ECEF; // Base background
+$bg-1: #F8F9FA; // Card headers, table headers
+$bg-2: #FFFFFF; // Cards/surfaces
+$bg-3: #DEE2E6; // Elevated/hover states
+$bg-4: #CED4DA; // Table tbody base background
+
+// Light Theme - Foreground progression (darkest to lighter)
+$fg-0: #212529; // Primary text - darkest
+$fg-1: #495057; // Secondary text
+$fg-2: #6C757D; // Muted text
+$fg-3: #ADB5BD; // Most muted - disabled/subtle
+
+// Semantic Colors - Primary (Bootstrap Blue)
+$primary-dark: #0A58CA; // Darkened
+$primary: #0D6EFD; // Base
+$primary-bright: #3D8BFD; // Brightened
+
+// Semantic Colors - Secondary (Gray)
+$secondary-dark: #565E64; // Darkened
+$secondary: #6C757D; // Base
+$secondary-bright: #8C959D; // Brightened
+
+// Semantic Colors - Danger
+$danger-dark: #B02A37; // Darkened
+$danger: #DC3545; // Base
+$danger-bright: #E35D6A; // Brightened
+
+// Semantic Colors - Success
+$success-dark: #146C43; // Darkened
+$success: #198754; // Base
+$success-bright: #479F76; // Brightened
+
+// Semantic Colors - Warning
+$warning-dark: #CC9A06; // Darkened
+$warning: #FFC107; // Base
+$warning-bright: #FFCD39; // Brightened
+
+// Semantic Colors - Info
+$info-dark: #0AA2C0; // Darkened
+$info: #0DCAF0; // Base
+$info-bright: #3DD5F3; // Brightened
+
+// Semantic Colors - Light
+$light-dark: #CED4DA;
+$light: #F8F9FA;
+$light-bright: #FFFFFF;
+
+// =============================================================================
+// Unified Color Map
+// =============================================================================
+
+$colors: (
+  'bg-0': $bg-0,
+  'bg-1': $bg-1,
+  'bg-2': $bg-2,
+  'bg-3': $bg-3,
+  'bg-4': $bg-4,
+  'fg-0': $fg-0,
+  'fg-1': $fg-1,
+  'fg-2': $fg-2,
+  'fg-3': $fg-3,
+  'primary': $primary,
+  'primary-dark': $primary-dark,
+  'primary-bright': $primary-bright,
+  'secondary': $secondary,
+  'secondary-dark': $secondary-dark,
+  'secondary-bright': $secondary-bright,
+  'success': $success,
+  'success-dark': $success-dark,
+  'success-bright': $success-bright,
+  'danger': $danger,
+  'danger-dark': $danger-dark,
+  'danger-bright': $danger-bright,
+  'warning': $warning,
+  'warning-dark': $warning-dark,
+  'warning-bright': $warning-bright,
+  'info': $info,
+  'info-dark': $info-dark,
+  'info-bright': $info-bright,
+  'light': $light,
+  'light-dark': $light-dark,
+  'light-bright': $light-bright
+);
+

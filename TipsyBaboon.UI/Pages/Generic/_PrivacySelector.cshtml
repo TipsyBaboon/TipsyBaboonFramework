@@ -1,0 +1,87 @@
+@model TipsyBaboon.UI.Models.PrivacySelectorModel
+@using TipsyBaboon.Core
+@using TipsyBaboon.Core.Models
+
+@if (Model.HasOwnership && Model.OwnershipLevels.Count > 0)
+{
+    var isDisabled = Model.IsReadOnly || (!Model.IsCreate && !Model.IsOwner);
+    var hasGroupOption = Model.OwnershipLevels.Contains(OwnershipLevel.Group);
+    var singleLevel = Model.OwnershipLevels.Count == 1;
+    var groupVisible = Model.CurrentLevel == OwnershipLevel.Group;
+
+    <div class="privacy-selector" data-privacy-selector>
+        <label class="form-label fw-semibold small text-muted mb-1">
+            <i class="bi bi-shield-lock me-1"></i>Privacy
+            @if (!string.IsNullOrEmpty(Model.OwnerDisplayName))
+            {
+                <span class="badge bg-info text-dark ms-1" title="Record Owner">👤 @Model.OwnerDisplayName</span>
+            }
+        </label>
+        <div class="d-flex align-items-center gap-2">
+            @if (singleLevel)
+            {
+                var level = Model.OwnershipLevels[0];
+                var icon = level switch
+                {
+                    OwnershipLevel.Public => "🌐",
+                    OwnershipLevel.Group => "👥",
+                    OwnershipLevel.Private => "🔒",
+                    _ => ""
+                };
+                <span class="badge bg-secondary">@icon @level</span>
+                <input type="hidden" name="OwnershipLevel" value="@((int)Model.OwnershipLevels[0])" data-privacy-level />
+            }
+            else if (isDisabled)
+            {
+                var icon = Model.CurrentLevel switch
+                {
+                    OwnershipLevel.Public => "🌐",
+                    OwnershipLevel.Group => "👥",
+                    OwnershipLevel.Private => "🔒",
+                    _ => ""
+                };
+                <span class="badge bg-secondary">@icon @Model.CurrentLevel</span>
+                <input type="hidden" name="OwnershipLevel" value="@((int)Model.CurrentLevel)" data-privacy-level />
+            }
+            else
+            {
+                <select class="form-select" name="OwnershipLevel" style="width: auto; min-width: 120px;"
+                        data-privacy-level>
+                    @foreach (var level in Model.OwnershipLevels.OrderByDescending(l => (int)l))
+                    {
+                        var icon = level switch
+                        {
+                            OwnershipLevel.Public => "🌐",
+                            OwnershipLevel.Group => "👥",
+                            OwnershipLevel.Private => "🔒",
+                            _ => ""
+                        };
+                        var isSelected = level == Model.CurrentLevel;
+                        <option value="@((int)level)" selected="@isSelected">@icon @level</option>
+                    }
+                </select>
+            }
+
+            @if (hasGroupOption && Model.UserGroups.Count > 0)
+            {
+                if (isDisabled && groupVisible && !string.IsNullOrEmpty(Model.CurrentGroupName))
+                {
+                    <span class="badge bg-secondary">👥 @Model.CurrentGroupName</span>
+                    <input type="hidden" name="GroupId" value="@Model.CurrentGroupId" data-privacy-group />
+                }
+                else if (!isDisabled)
+                {
+                    <select class="form-select" name="GroupId" style="width: auto; min-width: 150px; @(groupVisible ? "" : "display: none;")"
+                            data-privacy-group>
+                        <option value="">Select group...</option>
+                        @foreach (var group in Model.UserGroups)
+                        {
+                            var isGroupSelected = group.Id == Model.CurrentGroupId;
+                            <option value="@group.Id" selected="@isGroupSelected">@group.Name</option>
+                        }
+                    </select>
+                }
+            }
+        </div>
+    </div>
+}

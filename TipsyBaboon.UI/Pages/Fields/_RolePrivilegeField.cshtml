@@ -1,0 +1,36 @@
+@model TipsyBaboon.UI.Models.RolePrivilegeGroupModel
+@using TipsyBaboon.UI.Rendering
+
+<div id="@Model.ContainerId" 
+     class="role-privilege-container" 
+     data-parent-id="@Model.ParentRoleId" 
+     data-api-endpoint="@Model.ApiEndpoint">
+    <div class="role-privilege-loading">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <span class="ms-2">Loading privileges...</span>
+    </div>
+    <div class="role-privilege-empty" style="display: none;">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> No privileges available. Create privileges first to assign them to roles.
+        </div>
+    </div>
+    <div class="role-privilege-content" style="display: none;">
+        <ul class="nav nav-tabs" role="tablist"></ul>
+        <div class="tab-content"></div>
+    </div>
+</div>
+
+<script>
+(function() {
+    var containerId = '@Model.ContainerId';
+    var $container = document.getElementById(containerId);
+    var form = ($container && $container.closest('[record-form]')) || document;
+    form.addEventListener('form:ready', function() {
+        var parentId = $container.getAttribute('data-parent-id');
+        var apiEndpoint = $container.getAttribute('data-api-endpoint');
+        TipsyBaboon.UI.RolePrivilege.Initialize(containerId, apiEndpoint, parentId);
+    });
+})();
+</script>

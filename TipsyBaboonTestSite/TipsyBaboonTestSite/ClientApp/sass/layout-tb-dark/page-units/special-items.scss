@@ -1,0 +1,27 @@
+/// <references path="../extenders/palettes.scss' />
+@use '../extenders/palettes' as *;
+@use '../variables/colors' as *;
+
+.pagination {
+
+    .page-item {
+        a {
+            background-color: map-get($colors, 'bg-0');
+            color: map-get($colors, 'fg-0');
+            border-color: map-get($colors, 'secondary');
+            cursor: pointer;
+        }
+
+        &.active a {
+            @extend .palette-primary;
+            cursor: default;
+        }
+
+        &.disabled a {
+            background-color: map-get($colors, 'bg-3');
+            color: map-get($colors, 'fg-2');
+            border: 1px solid map-get($colors, 'secondary');
+            cursor: default;
+        }
+    }
+}

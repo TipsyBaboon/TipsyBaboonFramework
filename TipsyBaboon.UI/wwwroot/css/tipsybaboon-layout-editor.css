@@ -1,0 +1,111 @@
+/* Layout Editor Styles - Structural only, no colors */
+
+/* Column Ruler */
+.column-ruler {
+    opacity: 0.6;
+}
+
+.column-ruler .ruler-col {
+    font-size: 1.1rem;
+    line-height: 1;
+    font-weight: bold;
+}
+
+/* Sticky Toolbox */
+.sticky-card {
+    position: sticky;
+    top: 1rem;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
+}
+
+/* Layout Sections */
+.layout-area {
+    padding: 1rem !important;
+    min-height: 200px;
+}
+
+.layout-section {
+    transition: transform 0.2s;
+}
+
+.layout-section .section-handle {
+    cursor: move;
+    padding: 0.5rem 0.75rem;
+}
+
+/* Field Items */
+.field-item {
+    margin-bottom: 0.5rem;
+}
+
+.field-item .card {
+    min-height: 4rem;
+}
+
+.field-item .handle {
+    cursor: grab;
+    min-height: 3.5rem;
+}
+
+.field-item .handle:active {
+    cursor: grabbing;
+}
+
+.field-item .field-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    display: block;
+}
+
+.field-item .field-property {
+    font-size: 0.75rem;
+    font-family: monospace;
+    opacity: 0.85;
+}
+
+/* Placeholders during drag */
+.layout-section-placeholder,
+.field-placeholder {
+    min-height: 60px;
+    border-radius: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.layout-section-placeholder {
+    min-height: 120px;
+}
+
+/* Toolbox group headers */
+.toolbox-group-header {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.7;
+    padding: 0.25rem 0.5rem;
+    margin-bottom: 0.35rem;
+}
+
+/* jQuery UI sortable helper overrides */
+.ui-sortable-helper {
+    z-index: 1050 !important;
+    opacity: 0.95;
+}
+
+.ui-draggable-dragging {
+    z-index: 1050 !important;
+    opacity: 0.9;
+}
+
+/* Layout area minimum height */
+.layout-area.ui-sortable {
+    min-height: 150px;
+    padding-bottom: 1rem;
+}
+
+/* Section items container */
+.section-items {
+    min-height: 60px;
+    padding: 0.25rem;
+}

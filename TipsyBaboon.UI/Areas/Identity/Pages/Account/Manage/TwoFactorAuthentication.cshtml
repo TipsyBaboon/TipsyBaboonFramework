@@ -1,0 +1,79 @@
+@page
+@model TwoFactorAuthenticationModel
+@{
+    ViewData["Title"] = "Two-Factor Authentication";
+    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
+    Layout = Model.LayoutPage;
+}
+
+<h3>@ViewData["Title"]</h3>
+<partial name="_StatusMessage" for="StatusMessage" />
+
+<div class="row">
+    <div class="col-md-6">
+        @if (Model.IsTwoFactorEnabled)
+        {
+            <div class="alert alert-success">
+                <strong>Two-factor authentication is enabled.</strong>
+            </div>
+            <form method="post" asp-page-handler="Disable">
+                <button type="submit" class="btn btn-danger">Disable 2FA</button>
+            </form>
+        }
+        else
+        {
+            @if (Model.ShowSetup)
+            {
+                <h4>Configure authenticator app</h4>
+                <p>To use an authenticator app, follow these steps:</p>
+                <ol class="list">
+                    <li>
+                        <p>
+                            Download a two-factor authenticator app like Microsoft Authenticator for
+                            <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> and
+                            <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> or
+                            Google Authenticator for
+                            <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> and
+                            <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.
+                        </p>
+                    </li>
+                    <li>
+                        <p>Scan the QR Code or enter this key <kbd>@Model.FormattedSharedKey</kbd> into your two factor authenticator app.</p>
+                        <div id="qrCode">
+                            @if (!string.IsNullOrEmpty(Model.QrCodeBase64))
+                            {
+                                <img src="data:image/png;base64,@Model.QrCodeBase64" alt="QR Code" style="width: 200px; height: 200px;" />
+                            }
+                        </div>
+                    </li>
+                    <li>
+                        <p>
+                            Once you have scanned the QR code or input the key above, your two factor authentication app will provide you
+                            with a unique code. Enter the code in the confirmation box below.
+                        </p>
+                        <form method="post" asp-page-handler="Enable">
+                            <input type="hidden" asp-for="SharedKey" />
+                            <div class="form-floating mb-3">
+                                <input asp-for="VerificationCode" class="form-control" autocomplete="off" placeholder="Verification Code" />
+                                <label asp-for="VerificationCode" class="form-label"></label>
+                                <span asp-validation-for="VerificationCode" class="text-danger"></span>
+                            </div>
+                            <button type="submit" class="w-100 btn btn-lg btn-primary">Verify</button>
+                        </form>
+                    </li>
+                </ol>
+            }
+            else
+            {
+                <p>Two-factor authentication adds an extra layer of security to your account.</p>
+                <form method="post" asp-page-handler="Setup">
+                    <button type="submit" class="btn btn-primary">Set up 2FA</button>
+                </form>
+            }
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

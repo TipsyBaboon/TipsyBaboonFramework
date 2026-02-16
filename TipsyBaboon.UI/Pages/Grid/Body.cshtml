@@ -1,0 +1,178 @@
+@page "/_content/TipsyBaboon.UI/grid/{module}/{type}/body"
+@using TipsyBaboon.Core.Models
+@using TipsyBaboon.Core.Interfaces
+@using TipsyBaboon.UI.Rendering
+@using TipsyBaboon.Core.Data
+@using TipsyBaboon.Core.Models.Governance
+@model TipsyBaboon.UI.Pages.Grid.BodyModel
+@{
+    Layout = null;
+    var gridModel = Model.GridModel;
+}
+@functions {
+    bool IsInvariantRecord(object row)
+    {
+        if (row == null) return false;
+        
+        if (row is TipsyBaboonModel model)
+            return model.IsInvariant;
+        
+        return false;
+    }
+
+    string GetRowId(object row, List<TipsyBaboon.UI.Models.GridColumn> columns)
+    {
+        var keyColumns = columns.Where(c => c.IsKey).OrderBy(c => c.KeyOrdinal ?? 0).ToList();
+        var keyParts = new List<string>();
+        foreach (var keyCol in keyColumns)
+        {
+            var prop = row.GetType().GetProperty(keyCol.Field);
+            var value = prop?.GetValue(row)?.ToString() ?? "";
+            keyParts.Add(value);
+        }
+        return string.Join("~", keyParts);
+    }
+    
+    object? GetFieldValue(object row, string field)
+    {
+        var prop = row.GetType().GetProperty(field);
+        return prop?.GetValue(row);
+    }
+    
+    string FormatCellValue(object? value, TipsyBaboon.UI.Models.GridColumn col)
+    {
+        if (value == null) return "";
+        
+        switch (col.FormatterType)
+        {
+            case "Boolean":
+                var boolVal = value is bool b ? b : false;
+                return boolVal 
+                    ? "<span class=\"text-success\">✓</span>" 
+                    : "<span class=\"text-danger\">✗</span>";
+            case "Date":
+                if (value is DateOnly dateOnly)
+                    return System.Net.WebUtility.HtmlEncode(dateOnly.ToString("MM/dd/yyyy"));
+                if (value is DateTime dt)
+                    return System.Net.WebUtility.HtmlEncode(dt.ToString("MM/dd/yyyy"));
+                break;
+            case "DateTime":
+                if (value is DateTime dtm)
+                    return System.Net.WebUtility.HtmlEncode(dtm.ToString("MM/dd/yyyy h:mm tt"));
+                if (value is DateTimeOffset dto)
+                    return System.Net.WebUtility.HtmlEncode(dto.ToString("MM/dd/yyyy h:mm tt"));
+                break;
+        }
+        // Always HTML-encode user data to prevent XSS
+        return System.Net.WebUtility.HtmlEncode(value.ToString() ?? "");
+    }
+    
+    string BuildKeyAttributes(object row, List<TipsyBaboon.UI.Models.GridColumn> columns)
+    {
+        var keyColumns = columns.Where(c => c.IsKey).ToList();
+        var attrs = new List<string>();
+        foreach (var col in keyColumns)
+        {
+            var value = GetFieldValue(row, col.Field)?.ToString() ?? "";
+            attrs.Add($"data-key-{col.Field.ToLowerInvariant()}=\"{System.Web.HttpUtility.HtmlAttributeEncode(value)}\"");
+        }
+        return string.Join(" ", attrs);
+    }
+
+    bool IsCellEditable(object row, TipsyBaboon.UI.Models.GridColumn col, SchemaDefinition schema)
+    {
+        if (!col.IsEditable || IsInvariantRecord(row))
+            return false;
+
+        if (schema.TypeName == "RolePermission" && row is RolePermission rp)
+        {
+            var restrictedColumns = new HashSet<string> { "CanCreate", "UpdateLevel", "DeleteLevel" };
+            if (restrictedColumns.Contains(col.Field) && rp.IsTargetModelReadOnly)
+                return false;
+        }
+
+        return true;
+    }
+}
+<tbody>
+@if (!gridModel.Rows.Any())
+{
+    var visibleColCount = gridModel.Columns.Count(c => !c.Hidden);
+    <tr class="grid-empty-row">
+        <td colspan="@visibleColCount" class="text-center text-muted py-4">
+            <i class="bi bi-inbox" style="font-size: 2rem;"></i>
+            No data available
+        </td>
+    </tr>
+}
+else
+{
+    foreach (var row in gridModel.Rows)
+    {
+        var rowId = GetRowId(row, gridModel.Columns);
+        var keyAttrs = BuildKeyAttributes(row, gridModel.Columns);
+        var wrapperAttrs = FieldRenderer.GetWrapperRecordContextAttributes(gridModel.Schema, row);
+        var rowStyle = gridModel.EnableRowNavigation ? "cursor: pointer;" : "";
+        <tr data-row-id="@rowId" @Html.Raw(keyAttrs) @Html.Raw(wrapperAttrs) class="grid-row" style="@rowStyle">
+            @foreach (var col in gridModel.Columns.Where(c => !c.Hidden))
+            {
+                var value = GetFieldValue(row, col.Field);
+                var colDef = gridModel.Schema.Columns.FirstOrDefault(c => c.PropertyName == col.Field);
+                
+                // Get alignment from field registration
+                string tdClass = "";
+                if (colDef != null)
+                {
+                    var alignment = FieldRenderer.GetGridAlignment(colDef);
+                    tdClass = alignment switch
+                    {
+                        TipsyBaboon.UI.Rendering.GridAlignment.Center => "text-center",
+                        TipsyBaboon.UI.Rendering.GridAlignment.Right => "text-end",
+                        _ => "" // Left is default
+                    };
+                }
+                
+                var cellEditable = IsCellEditable(row, col, gridModel.Schema);
+                <td class="@tdClass" data-field="@col.Field">
+                    @if (cellEditable && gridModel.IsEditable)
+                    {
+                        if (colDef != null)
+                        {
+                            @FieldRenderer.RenderField(Html, gridModel.Schema, colDef, row, gridModel.FormId, rowId, gridModel.FieldName)
+                        }
+                        else
+                        {
+                            var fieldName = !string.IsNullOrEmpty(gridModel.FieldName)
+                                ? $"{gridModel.FieldName}[{rowId}].{col.Field}"
+                                : col.Field;
+                            var hiddenValue = value switch
+                            {
+                                bool b => b ? "true" : "false",
+                                Enum e => ((int)(object)e).ToString(),
+                                _ => value?.ToString() ?? ""
+                            };
+
+                            <input type="hidden" name="@fieldName" data-field="@col.Field" value="@hiddenValue" />
+                            @Html.Raw(FormatCellValue(value, col))
+                        }
+                    }
+                    else
+                    {
+                        var fieldName = !string.IsNullOrEmpty(gridModel.FieldName) 
+                            ? $"{gridModel.FieldName}[{rowId}].{col.Field}" 
+                            : col.Field;
+                        var hiddenValue = value switch
+                        {
+                            bool b => b ? "true" : "false",
+                            Enum e => ((int)(object)e).ToString(),
+                            _ => value?.ToString() ?? ""
+                        };
+                        <input type="hidden" name="@fieldName" data-field="@col.Field" value="@hiddenValue" />
+                        @Html.Raw(FormatCellValue(value, col))
+                    }
+                </td>
+            }
+        </tr>
+    }
+}
+</tbody>

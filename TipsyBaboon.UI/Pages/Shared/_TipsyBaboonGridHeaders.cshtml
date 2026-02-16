@@ -1,0 +1,37 @@
+@model TipsyBaboon.UI.Models.GridRenderModel
+@using TipsyBaboon.UI.Rendering
+@using TipsyBaboon.Core.Data
+@* Renders the table header row for a TipsyBaboon grid *@
+@{
+    var schema = ModelRegistry.GetModel(Model.EntityTypeName);
+}
+<thead>
+    <tr>
+        @foreach (var col in Model.Columns.Where(c => !c.Hidden))
+        {
+            var style = !string.IsNullOrEmpty(col.Width) ? $"width:{col.Width}" : "";
+            
+            // Get alignment from field registration to match body cells
+            string thClass = "sortable";
+            if (schema != null)
+            {
+                var colDef = schema.Columns.FirstOrDefault(c => c.PropertyName == col.Field);
+                if (colDef != null)
+                {
+                    var alignment = FieldRenderer.GetGridAlignment(colDef);
+                    thClass = alignment switch
+                    {
+                        TipsyBaboon.UI.Rendering.GridAlignment.Center => "sortable text-center",
+                        TipsyBaboon.UI.Rendering.GridAlignment.Right => "sortable text-end",
+                        _ => "sortable" // Left is default
+                    };
+                }
+            }
+            
+            <th data-field="@col.Field" class="@thClass" style="@style">
+                <span class="header-text">@col.Header</span>
+                <span class="sort-icon"></span>
+            </th>
+        }
+    </tr>
+</thead>
