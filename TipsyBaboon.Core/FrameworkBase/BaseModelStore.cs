@@ -43,12 +43,12 @@ namespace TipsyBaboon.Core.FrameworkBase
         /// <param name="id">Primary key value (Guid or composite key dictionary).</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>The entity if found; otherwise <c>null</c>.</returns>
-        public abstract Task<T?> GetTypedByIdAsync<T>(object id, CancellationToken cancellationToken = default) where T :  TipsyBaboonModel;
+        public virtual Task<T?> GetTypedByIdAsync<T>(object id, CancellationToken cancellationToken = default) where T :  TipsyBaboonModel => throw new NotImplementedException();
         
-        internal abstract Task<T> InsertTypedInternalAsync<T>(dynamic record, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
-        internal abstract Task<T> UpdateTypedInternalAsync<T>(dynamic record, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
-        internal abstract Task<T> UpsertTypedInternalAsync<T>(dynamic record, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
-        internal abstract Task<bool> DeleteTypedInternalAsync<T>(object id, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        protected virtual Task<T> InsertTypedInternalAsync<T>(dynamic record, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
+        protected virtual Task<T> UpdateTypedInternalAsync<T>(dynamic record, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
+        protected virtual Task<T> UpsertTypedInternalAsync<T>(dynamic record, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
+        protected virtual Task<bool> DeleteTypedInternalAsync<T>(object id, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         /// <summary>
         /// Inserts a new typed entity. Invokes <see cref="IModelWithSaveAction.BeforeChangeAsync"/>
@@ -105,12 +105,13 @@ namespace TipsyBaboon.Core.FrameworkBase
         /// <param name="ids">Collection of primary key values.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>Entities matching the provided IDs.</returns>
-        public abstract Task<IEnumerable<T>> GetTypedByIdsAsync<T>(IEnumerable<object> ids, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
-        
-        internal abstract Task<IEnumerable<T>> BulkInsertTypedInternalAsync<T>(IEnumerable<dynamic> entities, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
-        internal abstract Task<IEnumerable<T>> BulkUpdateTypedInternalAsync<T>(IEnumerable<dynamic> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
-        internal abstract Task<IEnumerable<T>> BulkUpsertTypedInternalAsync<T>(IEnumerable<dynamic> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
-        internal abstract Task<int> BulkDeleteTypedInternalAsync<T>(IEnumerable<object> ids, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        /// Inserts a new typed entity. Invokes <see cref="IModelWithSaveAction.BeforeChangeAsync"/>
+        public virtual Task<IEnumerable<T>> GetTypedByIdsAsync<T>(IEnumerable<object> ids, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
+
+        protected virtual Task<IEnumerable<T>> BulkInsertTypedInternalAsync<T>(IEnumerable<dynamic> entities, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
+        protected virtual Task<IEnumerable<T>> BulkUpdateTypedInternalAsync<T>(IEnumerable<dynamic> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
+        protected virtual Task<IEnumerable<T>> BulkUpsertTypedInternalAsync<T>(IEnumerable<dynamic> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
+        protected virtual Task<int> BulkDeleteTypedInternalAsync<T>(IEnumerable<object> ids, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         /// <summary>
         /// Removes invariant records from the database that are no longer declared in code.
@@ -119,7 +120,7 @@ namespace TipsyBaboon.Core.FrameworkBase
         /// <typeparam name="T">The model type.</typeparam>
         /// <param name="validEntities">The current set of code-declared invariant entities.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
-        public abstract Task ClearOrphanedInvariantsAsync<T>(IEnumerable<T> validEntities, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        public virtual Task ClearOrphanedInvariantsAsync<T>(IEnumerable<T> validEntities, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         /// <summary>
         /// Inserts multiple typed entities in bulk. Invokes lifecycle hooks for each entity.
@@ -172,7 +173,7 @@ namespace TipsyBaboon.Core.FrameworkBase
         /// <param name="predicate">LINQ expression filter.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>All matching entities.</returns>
-        public abstract Task<IEnumerable<T>> QueryTypedAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        public virtual Task<IEnumerable<T>> QueryTypedAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         /// <summary>
         /// Queries typed entities using a <see cref="PagedRequest"/> with server-side paging, sorting, and filtering.
@@ -181,7 +182,7 @@ namespace TipsyBaboon.Core.FrameworkBase
         /// <param name="request">Paging, sorting, and filter parameters.</param>
         /// <param name="cancellationToken">Cancellation token.</param>
         /// <returns>A <see cref="PagedResult{T}"/> containing the page of results and total count.</returns>
-        public abstract Task<PagedResult<T>> QueryTypedAsync<T>(PagedRequest request, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        public virtual Task<PagedResult<T>> QueryTypedAsync<T>(PagedRequest request, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         #endregion
 
@@ -190,22 +191,22 @@ namespace TipsyBaboon.Core.FrameworkBase
         /// <summary>
         /// Returns the total count of all records for the specified model type.
         /// </summary>
-        public abstract Task<int> CountTypedAsync<T>(CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        public virtual Task<int> CountTypedAsync<T>(CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         /// <summary>
         /// Returns the count of records matching the specified predicate.
         /// </summary>
-        public abstract Task<int> CountTypedAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        public virtual Task<int> CountTypedAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         /// <summary>
         /// Checks whether a record with the specified primary key exists.
         /// </summary>
-        public abstract Task<bool> ExistsTypedAsync<T>(object id, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        public virtual Task<bool> ExistsTypedAsync<T>(object id, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         /// <summary>
         /// Checks whether any record matches the specified predicate.
         /// </summary>
-        public abstract Task<bool> ExistsTypedAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        public virtual Task<bool> ExistsTypedAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         #endregion
 
@@ -214,22 +215,22 @@ namespace TipsyBaboon.Core.FrameworkBase
         /// <summary>
         /// Retrieves a page of typed entities with default ordering.
         /// </summary>
-        public abstract Task<IEnumerable<T>> GetTypedPagedAsync<T>(int pageNumber, int pageSize, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        public virtual Task<IEnumerable<T>> GetTypedPagedAsync<T>(int pageNumber, int pageSize, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         /// <summary>
         /// Retrieves a page of typed entities filtered by a predicate.
         /// </summary>
-        public abstract Task<IEnumerable<T>> GetTypedPagedAsync<T>(int pageNumber, int pageSize, Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        public virtual Task<IEnumerable<T>> GetTypedPagedAsync<T>(int pageNumber, int pageSize, Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         /// <summary>
         /// Retrieves a page of typed entities with custom ordering.
         /// </summary>
-        public abstract Task<IEnumerable<T>> GetTypedPagedAsync<T>(int pageNumber, int pageSize, Expression<Func<T, object>> orderBy, bool ascending = true, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        public virtual Task<IEnumerable<T>> GetTypedPagedAsync<T>(int pageNumber, int pageSize, Expression<Func<T, object>> orderBy, bool ascending = true, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         /// <summary>
         /// Retrieves a page of typed entities filtered by a predicate with custom ordering.
         /// </summary>
-        public abstract Task<IEnumerable<T>> GetTypedPagedAsync<T>(int pageNumber, int pageSize, Expression<Func<T, bool>> predicate, Expression<Func<T, object>> orderBy, bool ascending = true, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        public virtual Task<IEnumerable<T>> GetTypedPagedAsync<T>(int pageNumber, int pageSize, Expression<Func<T, bool>> predicate, Expression<Func<T, object>> orderBy, bool ascending = true, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         #endregion
 
@@ -237,26 +238,26 @@ namespace TipsyBaboon.Core.FrameworkBase
 
         /// <summary>
         /// Registers a SQL view type for typed querying. The view must already exist in the database.
-        /// Models are marked with <see cref="Attributes.ViewModelAttribute"/> and mapped via <see cref="ViewDefinition"/>.
+        /// Models are marked with <see cref="Attributes.ViewModelAttribute"/> and mapped via <see cref="ViewModelAttribute"/>.
         /// </summary>
         /// <typeparam name="TView">The view model type.</typeparam>
         /// <param name="viewName">The SQL view name.</param>
-        public abstract void RegisterView<TView>(string viewName) where TView : class;
+        public virtual void RegisterView<TView>(string viewName) where TView : class => throw new NotImplementedException();
 
         /// <summary>
         /// Queries a registered view using an expression predicate.
         /// </summary>
-        public abstract Task<IEnumerable<T>> QueryTypedViewAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        public virtual Task<IEnumerable<T>> QueryTypedViewAsync<T>(Expression<Func<T, bool>> predicate, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         /// <summary>
         /// Queries a registered view with server-side paging, sorting, and filtering.
         /// </summary>
-        public abstract Task<PagedResult<T>> QueryTypedViewAsync<T>(PagedRequest request, CancellationToken cancellationToken = default) where T : TipsyBaboonModel;
+        public virtual Task<PagedResult<T>> QueryTypedViewAsync<T>(PagedRequest request, CancellationToken cancellationToken = default) where T : TipsyBaboonModel => throw new NotImplementedException();
 
         /// <summary>
         /// Checks whether a view type has been registered for typed querying.
         /// </summary>
-        public abstract bool IsViewRegistered<TView>() where TView : class;
+        public virtual bool IsViewRegistered<TView>() where TView : class => throw new NotImplementedException();
 
         #endregion
 
@@ -348,20 +349,27 @@ namespace TipsyBaboon.Core.FrameworkBase
 
         protected abstract Type? ResolveModelType(string moduleName, string modelName);
 
-        protected internal abstract Task<object?> GetByIdCoreAsync(Type entityType, object id, CancellationToken cancellationToken = default);
-        protected internal abstract Task<object> InsertCoreAsync(Type entityType, object entity, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
-        protected internal abstract Task<object> UpdateCoreAsync(Type entityType, object entity, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
-        protected internal abstract Task<object> UpsertCoreAsync(Type entityType, object entity, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
-        protected internal abstract Task<bool> DeleteCoreAsync(Type entityType, object id, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
-        protected internal abstract Task<PagedResult<object>> QueryCoreAsync(Type entityType, PagedRequest request, CancellationToken cancellationToken = default);
-        protected internal abstract Task<IEnumerable<object>> GetByIdsCoreAsync(Type entityType, IEnumerable<object> ids, CancellationToken cancellationToken = default);
-        protected internal abstract Task<IEnumerable<object>> BulkInsertCoreAsync(Type entityType, IEnumerable<object> entities, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
-        protected internal abstract Task<IEnumerable<object>> BulkUpdateCoreAsync(Type entityType, IEnumerable<object> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
-        protected internal abstract Task<IEnumerable<object>> BulkUpsertCoreAsync(Type entityType, IEnumerable<object> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
-        protected internal abstract Task<int> BulkDeleteCoreAsync(Type entityType, IEnumerable<object> ids, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
-        protected internal abstract Task<int> CountCoreAsync(Type entityType, CancellationToken cancellationToken = default);
-        protected internal abstract Task<bool> ExistsCoreAsync(Type entityType, object id, CancellationToken cancellationToken = default);
-        protected internal abstract Task<IEnumerable<object>> GetPagedCoreAsync(Type entityType, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
+        /// <summary>
+        /// Gets all schema definitions from the ModelRegistry.
+        /// Protected accessor for provider implementations to query registered models.
+        /// </summary>
+        protected static IReadOnlyList<SchemaDefinition> GetAllSchemaDefinitions()
+            => ModelRegistry.GetAllModels();
+
+        protected abstract Task<object?> GetByIdCoreAsync(Type entityType, object id, CancellationToken cancellationToken = default);
+        protected abstract Task<object> InsertCoreAsync(Type entityType, object entity, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
+        protected abstract Task<object> UpdateCoreAsync(Type entityType, object entity, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
+        protected abstract Task<object> UpsertCoreAsync(Type entityType, object entity, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
+        protected abstract Task<bool> DeleteCoreAsync(Type entityType, object id, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
+        protected abstract Task<PagedResult<object>> QueryCoreAsync(Type entityType, PagedRequest request, CancellationToken cancellationToken = default);
+        protected abstract Task<IEnumerable<object>> GetByIdsCoreAsync(Type entityType, IEnumerable<object> ids, CancellationToken cancellationToken = default);
+        protected abstract Task<IEnumerable<object>> BulkInsertCoreAsync(Type entityType, IEnumerable<object> entities, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
+        protected abstract Task<IEnumerable<object>> BulkUpdateCoreAsync(Type entityType, IEnumerable<object> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
+        protected abstract Task<IEnumerable<object>> BulkUpsertCoreAsync(Type entityType, IEnumerable<object> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
+        protected abstract Task<int> BulkDeleteCoreAsync(Type entityType, IEnumerable<object> ids, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default);
+        protected abstract Task<int> CountCoreAsync(Type entityType, CancellationToken cancellationToken = default);
+        protected abstract Task<bool> ExistsCoreAsync(Type entityType, object id, CancellationToken cancellationToken = default);
+        protected abstract Task<IEnumerable<object>> GetPagedCoreAsync(Type entityType, int pageNumber, int pageSize, CancellationToken cancellationToken = default);
 
         #endregion
 

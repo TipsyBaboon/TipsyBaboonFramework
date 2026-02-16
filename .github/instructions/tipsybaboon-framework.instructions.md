@@ -60,3 +60,18 @@ Framework operates from consumer config and discovery only.
 | **UI** (Razor/Bootstrap) | Customizable UI layer, API implementations | Persistence implementation |
 
 Core defines minimal contracts that persistence and UI layers implement.
+
+## SqlServer Query Filtering
+
+**Registered Module Isolation**: SqlServer automatically filters queries for governance tables and permission views to only show registered modules/models.
+
+Filtered types (in `TipsyBaboonModelStore.QueryCoreAsync`, `QueryTypedAsync`, `CountCoreAsync`):
+- **RolePermission** & **ModelPermission** views: Filtered by `ModuleName` IN registered modules
+- **RolePrivilegeView** view: Filtered by `ModelId` IN registered model IDs
+- **RADModule** table: Filtered by `Name` IN registered modules  
+- **ModelRecord** table: Filtered by `Id` IN registered model IDs from registered modules
+- **Privilege** table: Filtered by `RecordId` IN registered model IDs from registered modules
+
+**Rationale**: Supports monolith pattern with multiple entry points where different apps register different module subsets. Database may contain historical module/model records from previous registrations; only currently registered modules should be visible in UI and queries.
+
+**Implementation**: Filters injected at SQL query level (WHERE clause) to maintain correct paging/counting. Uses parameterized queries to prevent SQL injection.

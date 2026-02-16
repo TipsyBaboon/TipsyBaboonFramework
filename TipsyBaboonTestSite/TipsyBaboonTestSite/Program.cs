@@ -45,17 +45,17 @@ namespace TipsyBaboonTestSite
                             deleteLevel: TipsyBaboon.Core.PermissionLevel.Own);
                 }
                 
-                // AdventureWorks demo module
-                var awConnStr = builder.Configuration.GetConnectionString("AdventureWorks");
-                if (!string.IsNullOrEmpty(awConnStr))
-                {
-                    config.AddModule("AdventureWorks", awConnStr, "AdventureWorks Sample Database")
-                        .AddSeedPermission("Basic Rights", "AdventureWorks", "Customer",
-                            usePages: true, canCreate: true,
-                            readLevel: TipsyBaboon.Core.PermissionLevel.All,
-                            updateLevel: TipsyBaboon.Core.PermissionLevel.All,
-                            deleteLevel: TipsyBaboon.Core.PermissionLevel.All);
-                }
+                //// AdventureWorks demo module
+                //var awConnStr = builder.Configuration.GetConnectionString("AdventureWorks");
+                //if (!string.IsNullOrEmpty(awConnStr))
+                //{
+                //    config.AddModule("AdventureWorks", awConnStr, "AdventureWorks Sample Database")
+                //        .AddSeedPermission("Basic Rights", "AdventureWorks", "Customer",
+                //            usePages: true, canCreate: true,
+                //            readLevel: TipsyBaboon.Core.PermissionLevel.All,
+                //            updateLevel: TipsyBaboon.Core.PermissionLevel.All,
+                //            deleteLevel: TipsyBaboon.Core.PermissionLevel.All);
+                //}
                 
             });
 

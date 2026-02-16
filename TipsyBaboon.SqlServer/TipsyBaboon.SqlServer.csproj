@@ -32,7 +32,10 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
-		<PackageReference Include="TipsyBaboon.Core" Version="1.1.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\TipsyBaboon.Core\TipsyBaboon.Core.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -63,7 +63,7 @@ namespace TipsyBaboon.SqlServer.Storage
 
         #region Untyped Core Methods (SQL Execution - Abstract Overrides)
 
-        protected internal override async Task<object?> GetByIdCoreAsync(Type entityType, object id, CancellationToken cancellationToken = default)
+        protected override async Task<object?> GetByIdCoreAsync(Type entityType, object id, CancellationToken cancellationToken = default)
         {
             var schema = GetSchema(entityType)
                 ?? throw new InvalidOperationException($"No schema found for type '{entityType.Name}'");
@@ -114,7 +114,7 @@ namespace TipsyBaboon.SqlServer.Storage
             return null;
         }
 
-        protected internal override async Task<object> InsertCoreAsync(Type entityType, object entity, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<object> InsertCoreAsync(Type entityType, object entity, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
         {
             var schema = GetSchema(entityType)
                 ?? throw new InvalidOperationException($"No schema found for type '{entityType.Name}'");
@@ -230,7 +230,7 @@ namespace TipsyBaboon.SqlServer.Storage
             }
         }
 
-        protected internal override async Task<object> UpdateCoreAsync(Type entityType, object entity, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<object> UpdateCoreAsync(Type entityType, object entity, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
         {
             var schema = GetSchema(entityType)
                 ?? throw new InvalidOperationException($"No schema found for type '{entityType.Name}'");
@@ -321,7 +321,7 @@ namespace TipsyBaboon.SqlServer.Storage
             }
         }
 
-        protected internal override async Task<object> UpsertCoreAsync(Type entityType, object entity, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<object> UpsertCoreAsync(Type entityType, object entity, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
         {
             var schema = GetSchema(entityType)
                 ?? throw new InvalidOperationException($"No schema found for type '{entityType.Name}'");
@@ -346,7 +346,7 @@ namespace TipsyBaboon.SqlServer.Storage
             }
         }
 
-        protected internal override async Task<bool> DeleteCoreAsync(Type entityType, object id, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<bool> DeleteCoreAsync(Type entityType, object id, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
         {
             var schema = GetSchema(entityType)
                 ?? throw new InvalidOperationException($"No schema found for type '{entityType.Name}'");
@@ -422,13 +422,88 @@ namespace TipsyBaboon.SqlServer.Storage
             return result > 0;
         }
 
-        protected internal override async Task<PagedResult<object>> QueryCoreAsync(Type entityType, PagedRequest request, CancellationToken cancellationToken = default)
+        protected override async Task<PagedResult<object>> QueryCoreAsync(Type entityType, PagedRequest request, CancellationToken cancellationToken = default)
         {
             var schema = GetSchema(entityType)
                 ?? throw new InvalidOperationException($"No schema found for type '{entityType.Name}'");
             var sourceName = GetSourceName(schema);
             await using var conn = CreateConnection(entityType);
             await conn.OpenAsync(cancellationToken);
+
+            // Filter permission views and governance tables to only show registered modules/models
+            if (entityType.Name == "RolePermission" || entityType.Name == "ModelPermission")
+            {
+                var registeredModules = ModelRegistry.GetRegisteredModuleNames();
+                if (registeredModules.Any())
+                {
+                    var moduleFilter = FilterCriteria.In("ModuleName", registeredModules.ToList());
+                    if (!request.Filters.Any(f => f.PropertyName.Equals("ModuleName", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        request.Filters.Add(moduleFilter);
+                    }
+                }
+            }
+            else if (entityType.Name == "RADModule")
+            {
+                var registeredModules = ModelRegistry.GetRegisteredModuleNames();
+                if (registeredModules.Any())
+                {
+                    var moduleFilter = FilterCriteria.In("Name", registeredModules.ToList());
+                    if (!request.Filters.Any(f => f.PropertyName.Equals("Name", StringComparison.OrdinalIgnoreCase)))
+                    {
+                        request.Filters.Add(moduleFilter);
+                    }
+                }
+            }
+            else if (entityType.Name == "ModelRecord" || entityType.Name == "Privilege")
+            {
+                var registeredModules = ModelRegistry.GetRegisteredModuleNames();
+                if (registeredModules.Any())
+                {
+                    // Get registered ModelRecord IDs from ModelRegistry
+                    var registeredModelIds = new List<Guid>();
+                    foreach (var moduleName in registeredModules)
+                    {
+                        var moduleModels = GetAllSchemaDefinitions()
+                            .Where(m => m.ModuleName.Equals(moduleName, StringComparison.OrdinalIgnoreCase));
+                        registeredModelIds.AddRange(moduleModels.Select(m => m.RecordModelId));
+                    }
+                    
+                    if (registeredModelIds.Any())
+                    {
+                        var filterProperty = entityType.Name == "Privilege" ? "RecordId" : "Id";
+                        var modelFilter = FilterCriteria.In(filterProperty, registeredModelIds);
+                        if (!request.Filters.Any(f => f.PropertyName.Equals(filterProperty, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            request.Filters.Add(modelFilter);
+                        }
+                    }
+                }
+            }
+            else if (entityType.Name == "RolePrivilegeView")
+            {
+                var registeredModules = ModelRegistry.GetRegisteredModuleNames();
+                if (registeredModules.Any())
+                {
+                    // Get registered ModelRecord IDs from ModelRegistry
+                    var registeredModelIds = new List<Guid>();
+                    foreach (var moduleName in registeredModules)
+                    {
+                        var moduleModels = BaseModelStore.GetAllSchemaDefinitions()
+                            .Where(m => m.ModuleName.Equals(moduleName, StringComparison.OrdinalIgnoreCase));
+                        registeredModelIds.AddRange(moduleModels.Select(m => m.RecordModelId));
+                    }
+                    
+                    if (registeredModelIds.Any())
+                    {
+                        var modelFilter = FilterCriteria.In("ModelId", registeredModelIds);
+                        if (!request.Filters.Any(f => f.PropertyName.Equals("ModelId", StringComparison.OrdinalIgnoreCase)))
+                        {
+                            request.Filters.Add(modelFilter);
+                        }
+                    }
+                }
+            }
 
             var whereClause = BuildWhereClause(schema, request.Filters, out var parameters);
             var orderByClause = BuildOrderByClause(schema, request.Sorts);
@@ -503,7 +578,7 @@ namespace TipsyBaboon.SqlServer.Storage
             };
         }
 
-        protected internal override async Task<IEnumerable<object>> GetByIdsCoreAsync(Type entityType, IEnumerable<object> ids, CancellationToken cancellationToken = default)
+        protected override async Task<IEnumerable<object>> GetByIdsCoreAsync(Type entityType, IEnumerable<object> ids, CancellationToken cancellationToken = default)
         {
             var schema = GetSchema(entityType)
                 ?? throw new InvalidOperationException($"No schema found for type '{entityType.Name}'");
@@ -554,7 +629,7 @@ namespace TipsyBaboon.SqlServer.Storage
             return results;
         }
 
-        protected internal override async Task<IEnumerable<object>> BulkInsertCoreAsync(Type entityType, IEnumerable<object> entities, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<IEnumerable<object>> BulkInsertCoreAsync(Type entityType, IEnumerable<object> entities, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
         {
             var schema = GetSchema(entityType)
                 ?? throw new InvalidOperationException($"No schema found for type '{entityType.Name}'");
@@ -707,7 +782,7 @@ namespace TipsyBaboon.SqlServer.Storage
             return typedEntities;
         }
 
-        protected internal override async Task<IEnumerable<object>> BulkUpdateCoreAsync(Type entityType, IEnumerable<object> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<IEnumerable<object>> BulkUpdateCoreAsync(Type entityType, IEnumerable<object> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
         {
             var schema = GetSchema(entityType)
                 ?? throw new InvalidOperationException($"No schema found for type '{entityType.Name}'");
@@ -942,7 +1017,7 @@ namespace TipsyBaboon.SqlServer.Storage
             return typedEntities;
         }
 
-        protected internal override async Task<IEnumerable<object>> BulkUpsertCoreAsync(Type entityType, IEnumerable<object> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<IEnumerable<object>> BulkUpsertCoreAsync(Type entityType, IEnumerable<object> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
         {
             var schema = GetSchema(entityType)
                 ?? throw new InvalidOperationException($"No schema found for type '{entityType.Name}'");
@@ -1026,7 +1101,7 @@ namespace TipsyBaboon.SqlServer.Storage
             return results;
         }
 
-        protected internal override async Task<int> BulkDeleteCoreAsync(Type entityType, IEnumerable<object> ids, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<int> BulkDeleteCoreAsync(Type entityType, IEnumerable<object> ids, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
         {
             var schema = GetSchema(entityType)
                 ?? throw new InvalidOperationException($"No schema found for type '{entityType.Name}'");
@@ -1235,7 +1310,7 @@ namespace TipsyBaboon.SqlServer.Storage
             return deletedCount;
         }
 
-        protected internal override async Task<int> CountCoreAsync(Type entityType, CancellationToken cancellationToken = default)
+        protected override async Task<int> CountCoreAsync(Type entityType, CancellationToken cancellationToken = default)
         {
             var schema = GetSchema(entityType)
                 ?? throw new InvalidOperationException($"No schema found for type '{entityType.Name}'");
@@ -1244,13 +1319,94 @@ namespace TipsyBaboon.SqlServer.Storage
             await using var conn = CreateConnection(entityType);
             await conn.OpenAsync(cancellationToken);
 
-            var sql = $"SELECT COUNT(*) FROM [dbo].[{sourceName}]";
-            await using var cmd = new SqlCommand(sql, conn);
+            // Filter permission views and governance tables to only count registered modules/models
+            var whereClause = string.Empty;
+            var cmd = new SqlCommand { Connection = conn };
+            if (entityType.Name == "RolePermission" || entityType.Name == "ModelPermission")
+            {
+                var registeredModules = ModelRegistry.GetRegisteredModuleNames().ToList();
+                if (registeredModules.Any())
+                {
+                    var inParams = new List<string>();
+                    for (int i = 0; i < registeredModules.Count; i++)
+                    {
+                        var paramName = $"@module{i}";
+                        inParams.Add(paramName);
+                        cmd.Parameters.AddWithValue(paramName, registeredModules[i]);
+                    }
+                    whereClause = $" WHERE [ModuleName] IN ({string.Join(", ", inParams)})";
+                }
+            }
+            else if (entityType.Name == "RADModule")
+            {
+                var registeredModules = ModelRegistry.GetRegisteredModuleNames().ToList();
+                if (registeredModules.Any())
+                {
+                    var inParams = new List<string>();
+                    for (int i = 0; i < registeredModules.Count; i++)
+                    {
+                        var paramName = $"@module{i}";
+                        inParams.Add(paramName);
+                        cmd.Parameters.AddWithValue(paramName, registeredModules[i]);
+                    }
+                    whereClause = $" WHERE [Name] IN ({string.Join(", ", inParams)})";
+                }
+            }
+            else if (entityType.Name == "ModelRecord" || entityType.Name == "Privilege")
+            {
+                var registeredModules = ModelRegistry.GetRegisteredModuleNames();
+                var registeredModelIds = new List<Guid>();
+                foreach (var moduleName in registeredModules)
+                {
+                    var moduleModels = BaseModelStore.GetAllSchemaDefinitions()
+                        .Where(m => m.ModuleName.Equals(moduleName, StringComparison.OrdinalIgnoreCase));
+                    registeredModelIds.AddRange(moduleModels.Select(m => m.RecordModelId));
+                }
+                
+                if (registeredModelIds.Any())
+                {
+                    var filterColumn = entityType.Name == "Privilege" ? "RecordId" : "Id";
+                    var inParams = new List<string>();
+                    for (int i = 0; i < registeredModelIds.Count; i++)
+                    {
+                        var paramName = $"@modelId{i}";
+                        inParams.Add(paramName);
+                        cmd.Parameters.AddWithValue(paramName, registeredModelIds[i]);
+                    }
+                    whereClause = $" WHERE [{filterColumn}] IN ({string.Join(", ", inParams)})";
+                }
+            }
+            else if (entityType.Name == "RolePrivilegeView")
+            {
+                var registeredModules = ModelRegistry.GetRegisteredModuleNames();
+                var registeredModelIds = new List<Guid>();
+                foreach (var moduleName in registeredModules)
+                {
+                    var moduleModels = GetAllSchemaDefinitions()
+                        .Where(m => m.ModuleName.Equals(moduleName, StringComparison.OrdinalIgnoreCase));
+                    registeredModelIds.AddRange(moduleModels.Select(m => m.RecordModelId));
+                }
+                
+                if (registeredModelIds.Any())
+                {
+                    var inParams = new List<string>();
+                    for (int i = 0; i < registeredModelIds.Count; i++)
+                    {
+                        var paramName = $"@modelId{i}";
+                        inParams.Add(paramName);
+                        cmd.Parameters.AddWithValue(paramName, registeredModelIds[i]);
+                    }
+                    whereClause = $" WHERE [ModelId] IN ({string.Join(", ", inParams)})";
+                }
+            }
+
+            var sql = $"SELECT COUNT(*) FROM [dbo].[{sourceName}]{whereClause}";
+            cmd.CommandText = sql;
 
             return (int)(await cmd.ExecuteScalarAsync(cancellationToken) ?? 0);
         }
 
-        protected internal override async Task<bool> ExistsCoreAsync(Type entityType, object id, CancellationToken cancellationToken = default)
+        protected override async Task<bool> ExistsCoreAsync(Type entityType, object id, CancellationToken cancellationToken = default)
         {
             var schema = GetSchema(entityType)
                 ?? throw new InvalidOperationException($"No schema found for type '{entityType.Name}'");
@@ -1287,7 +1443,7 @@ namespace TipsyBaboon.SqlServer.Storage
             return (int)(await cmd.ExecuteScalarAsync(cancellationToken) ?? 0) > 0;
         }
 
-        protected internal override async Task<IEnumerable<object>> GetPagedCoreAsync(Type entityType, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
+        protected override async Task<IEnumerable<object>> GetPagedCoreAsync(Type entityType, int pageNumber, int pageSize, CancellationToken cancellationToken = default)
         {
             var request = new PagedRequest
             {
@@ -1307,16 +1463,16 @@ namespace TipsyBaboon.SqlServer.Storage
         public override Task<T?> GetTypedByIdAsync<T>(object id, CancellationToken cancellationToken = default) where T : class
             => GetByIdCoreAsync(typeof(T), id, cancellationToken).ContinueWith(t => (T?)t.Result, cancellationToken);
 
-        internal override async Task<T> InsertTypedInternalAsync<T>(dynamic entity, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<T> InsertTypedInternalAsync<T>(dynamic entity, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
             => (T)await InsertCoreAsync(typeof(T), entity, skipHooks, skipChangeLog, cancellationToken);
 
-        internal override async Task<T> UpdateTypedInternalAsync<T>(dynamic entity, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<T> UpdateTypedInternalAsync<T>(dynamic entity, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
             => (T)await UpdateCoreAsync(typeof(T), entity, skipHooks, ignoreInvariant, allowChangeInvariant, skipChangeLog, cancellationToken);
 
-        internal override async Task<T> UpsertTypedInternalAsync<T>(dynamic entity, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<T> UpsertTypedInternalAsync<T>(dynamic entity, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
             => (T)await UpsertCoreAsync(typeof(T), entity, skipHooks, ignoreInvariant, allowChangeInvariant, skipChangeLog, cancellationToken);
 
-        internal override async Task<bool> DeleteTypedInternalAsync<T>(object id, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<bool> DeleteTypedInternalAsync<T>(object id, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
             => await DeleteCoreAsync(typeof(T), id, skipHooks, ignoreInvariant, skipChangeLog, cancellationToken);
 
         #endregion
@@ -1329,19 +1485,19 @@ namespace TipsyBaboon.SqlServer.Storage
             return results.Cast<T>();
         }
 
-        internal override async Task<IEnumerable<T>> BulkInsertTypedInternalAsync<T>(IEnumerable<dynamic> entities, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<IEnumerable<T>> BulkInsertTypedInternalAsync<T>(IEnumerable<dynamic> entities, bool skipHooks = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
         {
             var results = await BulkInsertCoreAsync(typeof(T), entities.Cast<object>(), skipHooks, skipChangeLog, cancellationToken);
             return results.Cast<T>();
         }
 
-        internal override async Task<IEnumerable<T>> BulkUpdateTypedInternalAsync<T>(IEnumerable<dynamic> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<IEnumerable<T>> BulkUpdateTypedInternalAsync<T>(IEnumerable<dynamic> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
         {
             var results = await BulkUpdateCoreAsync(typeof(T), entities.Cast<object>(), skipHooks, ignoreInvariant, allowChangeInvariant, skipChangeLog, cancellationToken);
             return results.Cast<T>();
         }
 
-        internal override async Task<IEnumerable<T>> BulkUpsertTypedInternalAsync<T>(IEnumerable<dynamic> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<IEnumerable<T>> BulkUpsertTypedInternalAsync<T>(IEnumerable<dynamic> entities, bool skipHooks = false, bool ignoreInvariant = false, bool allowChangeInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
         {
             var results = await BulkUpsertCoreAsync(typeof(T), entities.Cast<object>(), skipHooks, ignoreInvariant, allowChangeInvariant, skipChangeLog, cancellationToken);
             return results.Cast<T>();
@@ -1410,7 +1566,7 @@ namespace TipsyBaboon.SqlServer.Storage
             await cmd.DisposeAsync();
         }
 
-        internal override async Task<int> BulkDeleteTypedInternalAsync<T>(IEnumerable<object> ids, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
+        protected override async Task<int> BulkDeleteTypedInternalAsync<T>(IEnumerable<object> ids, bool skipHooks = false, bool ignoreInvariant = false, bool skipChangeLog = false, CancellationToken cancellationToken = default)
         {
             return await BulkDeleteCoreAsync(typeof(T), ids, skipHooks, ignoreInvariant, skipChangeLog, cancellationToken);
         }
@@ -1427,9 +1583,91 @@ namespace TipsyBaboon.SqlServer.Storage
 
             var sourceName = GetSourceName(schema!);
             var columnList = string.Join(", ", schema!.Columns.Where(c => !c.IsNavigationProperty && !c.IsNotMapped).Select(c => $"[{c.ColumnName}]"));
-            var sql = $"SELECT {columnList} FROM [dbo].[{sourceName}]";
+            
+            // Filter permission views and governance tables to only show registered modules/models
+            var whereClause = string.Empty;
+            var cmd = new SqlCommand { Connection = conn };
+            if (typeof(T).Name == "RolePermission" || typeof(T).Name == "ModelPermission")
+            {
+                var registeredModules = ModelRegistry.GetRegisteredModuleNames().ToList();
+                if (registeredModules.Any())
+                {
+                    var inParams = new List<string>();
+                    for (int i = 0; i < registeredModules.Count; i++)
+                    {
+                        var paramName = $"@module{i}";
+                        inParams.Add(paramName);
+                        cmd.Parameters.AddWithValue(paramName, registeredModules[i]);
+                    }
+                    whereClause = $" WHERE [ModuleName] IN ({string.Join(", ", inParams)})";
+                }
+            }
+            else if (typeof(T).Name == "RADModule")
+            {
+                var registeredModules = ModelRegistry.GetRegisteredModuleNames().ToList();
+                if (registeredModules.Any())
+                {
+                    var inParams = new List<string>();
+                    for (int i = 0; i < registeredModules.Count; i++)
+                    {
+                        var paramName = $"@module{i}";
+                        inParams.Add(paramName);
+                        cmd.Parameters.AddWithValue(paramName, registeredModules[i]);
+                    }
+                    whereClause = $" WHERE [Name] IN ({string.Join(", ", inParams)})";
+                }
+            }
+            else if (typeof(T).Name == "ModelRecord" || typeof(T).Name == "Privilege")
+            {
+                var registeredModules = ModelRegistry.GetRegisteredModuleNames();
+                var registeredModelIds = new List<Guid>();
+                foreach (var moduleName in registeredModules)
+                {
+                    var moduleModels = BaseModelStore.GetAllSchemaDefinitions()
+                        .Where(m => m.ModuleName.Equals(moduleName, StringComparison.OrdinalIgnoreCase));
+                    registeredModelIds.AddRange(moduleModels.Select(m => m.RecordModelId));
+                }
+                
+                if (registeredModelIds.Any())
+                {
+                    var filterColumn = typeof(T).Name == "Privilege" ? "RecordId" : "Id";
+                    var inParams = new List<string>();
+                    for (int i = 0; i < registeredModelIds.Count; i++)
+                    {
+                        var paramName = $"@modelId{i}";
+                        inParams.Add(paramName);
+                        cmd.Parameters.AddWithValue(paramName, registeredModelIds[i]);
+                    }
+                    whereClause = $" WHERE [{filterColumn}] IN ({string.Join(", ", inParams)})";
+                }
+            }
+            else if (typeof(T).Name == "RolePrivilegeView")
+            {
+                var registeredModules = ModelRegistry.GetRegisteredModuleNames();
+                var registeredModelIds = new List<Guid>();
+                foreach (var moduleName in registeredModules)
+                {
+                    var moduleModels = GetAllSchemaDefinitions()
+                        .Where(m => m.ModuleName.Equals(moduleName, StringComparison.OrdinalIgnoreCase));
+                    registeredModelIds.AddRange(moduleModels.Select(m => m.RecordModelId));
+                }
+                
+                if (registeredModelIds.Any())
+                {
+                    var inParams = new List<string>();
+                    for (int i = 0; i < registeredModelIds.Count; i++)
+                    {
+                        var paramName = $"@modelId{i}";
+                        inParams.Add(paramName);
+                        cmd.Parameters.AddWithValue(paramName, registeredModelIds[i]);
+                    }
+                    whereClause = $" WHERE [ModelId] IN ({string.Join(", ", inParams)})";
+                }
+            }
+            
+            var sql = $"SELECT {columnList} FROM [dbo].[{sourceName}]{whereClause}";
+            cmd.CommandText = sql;
 
-            await using var cmd = new SqlCommand(sql, conn);
             await using var reader = await cmd.ExecuteReaderAsync(cancellationToken);
 
             var results = new List<T>();

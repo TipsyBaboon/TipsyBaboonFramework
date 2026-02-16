@@ -118,6 +118,13 @@ namespace TipsyBaboon.Core.Data
         internal static IReadOnlyList<SchemaDefinition> GetModelsForMenu()
             => FilterDefinitions(d => d.ShowInMenu);
 
+        /// <summary>
+        /// Gets all registered schema definitions for registered modules.
+        /// Used by BaseModelStore implementations to filter governance queries.
+        /// </summary>
+        internal static IReadOnlyList<SchemaDefinition> GetAllModels()
+            => FilterDefinitions(d => true);
+
         internal static IReadOnlyList<Type> DiscoverModelTypes(IEnumerable<Assembly> assemblies)
         {
             var cache = GetOrCreateCache(assemblies);
