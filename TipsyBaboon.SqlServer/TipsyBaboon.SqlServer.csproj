@@ -9,7 +9,6 @@
 
 		<!-- NuGet Package Metadata -->
 		<PackageId>TipsyBaboon.SqlServer</PackageId>
-		<Version>1.1.0</Version>
 		<Authors>Tipsy Baboon</Authors>
 		<Company>Tipsy Baboon</Company>
 		<Product>TipsyBaboon Framework</Product>
@@ -32,10 +31,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.1.4" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ProjectReference Include="..\TipsyBaboon.Core\TipsyBaboon.Core.csproj" />
+		<PackageReference Include="TipsyBaboon.Core" Version="1.1.1" />
 	</ItemGroup>
 
 	<ItemGroup>

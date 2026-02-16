@@ -10,7 +10,6 @@
 
     <!-- NuGet Package Metadata -->
     <PackageId>TipsyBaboon.UI</PackageId>
-    <Version>1.1.0</Version>
     <Authors>Tipsy Baboon</Authors>
     <Company>Tipsy Baboon</Company>
     <Product>TipsyBaboon Framework</Product>
@@ -45,7 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="TipsyBaboon.Core" Version="1.1.0" />
+    <PackageReference Include="TipsyBaboon.Core" Version="1.1.1" />
   </ItemGroup>
 
   <ItemGroup>
