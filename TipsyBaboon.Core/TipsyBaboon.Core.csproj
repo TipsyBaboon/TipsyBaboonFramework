@@ -9,7 +9,6 @@
 
     <!-- NuGet Package Metadata -->
     <PackageId>TipsyBaboon.Core</PackageId>
-    <Version>1.1.0</Version>
     <Authors>Tipsy Baboon</Authors>
     <Company>Tipsy Baboon</Company>
     <Product>TipsyBaboon Framework</Product>
