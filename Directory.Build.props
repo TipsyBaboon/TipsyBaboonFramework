@@ -1,0 +1,15 @@
+<Project>
+  <PropertyGroup>
+    <!-- Centralized version for all TipsyBaboon packages -->
+    <Version>1.0.0</Version>
+    <Authors>TipsyBaboon</Authors>
+    <Company>TipsyBaboon</Company>
+    <Copyright>Copyright © TipsyBaboon 2026</Copyright>
+    <PackageProjectUrl>https://github.com/TipsyBaboon/TipsyBaboonFramework</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/TipsyBaboon/TipsyBaboonFramework</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>aspnetcore;framework;crud;sql-server</PackageTags>
+  </PropertyGroup>
+</Project>
