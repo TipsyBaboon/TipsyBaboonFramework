@@ -37,26 +37,36 @@ namespace TipsyBaboonTestSite
                 var nwConnStr = builder.Configuration.GetConnectionString("Northwind");
                 if (!string.IsNullOrEmpty(nwConnStr))
                 {
-                    config.AddModule("Northwind", nwConnStr, "Northwind Test Environment")
-                        .AddSeedPermission("Basic Rights", "Northwind", "Supplier",
+                    var nwModule = config.AddModule("Northwind", nwConnStr, "Northwind Test Environment");
+                    
+                    // Add full rights for all Northwind models
+                    foreach (var entityName in new[] { "Customer", "Order", "Order Item", "Product", "Supplier" })
+                    {
+                        nwModule.AddSeedPermission("Basic Rights", "Northwind", entityName,
                             usePages: true, canCreate: true,
                             readLevel: TipsyBaboon.Core.PermissionLevel.All,
-                            updateLevel: TipsyBaboon.Core.PermissionLevel.Own,
-                            deleteLevel: TipsyBaboon.Core.PermissionLevel.Own);
+                            updateLevel: TipsyBaboon.Core.PermissionLevel.All,
+                            deleteLevel: TipsyBaboon.Core.PermissionLevel.All);
+                    }
                 }
-                
-                //// AdventureWorks demo module
+
+                // AdventureWorks demo module
                 //var awConnStr = builder.Configuration.GetConnectionString("AdventureWorks");
                 //if (!string.IsNullOrEmpty(awConnStr))
                 //{
-                //    config.AddModule("AdventureWorks", awConnStr, "AdventureWorks Sample Database")
-                //        .AddSeedPermission("Basic Rights", "AdventureWorks", "Customer",
+                //    var awModule = config.AddModule("AdventureWorks", awConnStr, "AdventureWorks Sample Database");
+                    
+                //    // Add full rights for all AdventureWorks models
+                //    foreach (var entityName in new[] { "Customer", "Address", "Product", "Product Category", "Sales Order", "Order Detail" })
+                //    {
+                //        awModule.AddSeedPermission("Basic Rights", "AdventureWorks", entityName,
                 //            usePages: true, canCreate: true,
                 //            readLevel: TipsyBaboon.Core.PermissionLevel.All,
                 //            updateLevel: TipsyBaboon.Core.PermissionLevel.All,
                 //            deleteLevel: TipsyBaboon.Core.PermissionLevel.All);
+                //    }
                 //}
-                
+
             });
 
             builder.Services.AddTipsyBaboonUI();

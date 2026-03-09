@@ -44,7 +44,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="TipsyBaboon.Core" Version="1.1.1" />
+    <PackageReference Include="TipsyBaboon.Core" Version="1.1.2" />
   </ItemGroup>
 
   <ItemGroup>

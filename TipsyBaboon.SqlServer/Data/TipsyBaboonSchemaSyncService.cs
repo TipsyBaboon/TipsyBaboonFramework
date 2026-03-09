@@ -88,13 +88,16 @@ namespace TipsyBaboon.SqlServer.Data
                 }
             }
 
-            // Phase 3: Sync schemas for each module
+            // Phase 3: Create/alter ALL table structures + indexes + FK constraints across all modules.
+            // Data (seeds/invariants) is deliberately deferred until all structure is finalized.
+            var newTablesByModule = new Dictionary<string, IReadOnlyList<SchemaDefinition>>(StringComparer.OrdinalIgnoreCase);
             foreach (var module in registeredModules)
             {
-                await EnsureModuleSchemaAsync(module.Name, module.ConnectionString!, cancellationToken);
+                newTablesByModule[module.Name] = await EnsureModuleSchemaAsync(module.Name, module.ConnectionString!, cancellationToken);
             }
-            
-            // Phase 3.5: Register ModelRecords for ALL modules in Governance database
+
+            // Phase 3.5: Register ModelRecords for ALL modules in Governance database.
+            // Must happen before data phase so Permission.RecordId FK targets exist.
             if (governanceModule != null)
             {
                 await using var connection = new SqlConnection(governanceModule.ConnectionString!);
@@ -117,8 +120,20 @@ namespace TipsyBaboon.SqlServer.Data
                     }
                 }
             }
-            
-            // Phase 4: Upsert ALL config invariants from ALL modules into ConfigItem table
+
+            // Phase 4: Seeds and invariants for all modules.
+            // All tables exist, all FK constraints are set, ModelRecord rows are populated - safe to write data.
+            // Invariants are re-upserted on every startup; seeds only run for newly created tables.
+            foreach (var module in registeredModules)
+            {
+                var newTableNames = newTablesByModule.TryGetValue(module.Name, out var newTables)
+                    ? newTables.Select(d => d.TableName).ToHashSet(StringComparer.OrdinalIgnoreCase)
+                    : new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                await SeedAndUpsertInvariantsForModuleAsync(module.Name, module.ConnectionString!, newTableNames, cancellationToken);
+            }
+
+            // Phase 5: Upsert ALL config invariants from ALL modules into ConfigItem table.
             if (governanceModule != null)
             {
                 await using var connection = new SqlConnection(governanceModule.ConnectionString!);
@@ -135,7 +150,8 @@ namespace TipsyBaboon.SqlServer.Data
                 }
             }
             
-            // Phase 5: Process permission requests (seed and invariant)
+            // Phase 6: Process permission requests registered via ModelRegistry (consumer modules).
+            // Permission.GetInvariantRecords are handled in Phase 4 via UpsertInvariantRecordsAsync.
             if (governanceModule != null)
             {
                 await using var connection = new SqlConnection(governanceModule.ConnectionString!);
@@ -149,8 +165,7 @@ namespace TipsyBaboon.SqlServer.Data
                 }
             }
             
-            // Phase 6: Re-register views now that all tables exist
-            // Views may have failed during initial registration if referenced tables didn't exist yet
+            // Phase 7: Re-register views now that all tables exist.
             EnsureViewsRegistered();
         }
         
@@ -166,49 +181,12 @@ namespace TipsyBaboon.SqlServer.Data
             var radModuleDef = governanceDefinitions.FirstOrDefault(d => d.TableName == "RADModule");
             var modelRecordDef = governanceDefinitions.FirstOrDefault(d => d.TableName == "ModelRecord");
             
-            // Create/sync RADModule table first
+            // Structure only — seeds/invariants are deferred to Phase 4 of EnsureCoreSchemaAsync.
             if (radModuleDef != null)
-            {
-                var tableExists = await TableExistsAsync(connection, "dbo", "RADModule", cancellationToken);
-                if (!tableExists)
-                {
-                    var ddl = GenerateCreateTableDdl(radModuleDef);
-                    using var cmd = connection.CreateCommand();
-                    cmd.CommandText = ddl;
-                    await cmd.ExecuteNonQueryAsync(cancellationToken);
-                }
-                else
-                {
-                    // Table exists - sync columns to ensure CreatedByDisplayName/ModifiedByDisplayName exist
-                    var storedHash = await GetStoredHashAsync(connection, "RADModule", cancellationToken);
-                    if (storedHash != radModuleDef.VersionHash)
-                    {
-                        await SyncColumnsAsync(connection, radModuleDef, cancellationToken);
-                    }
-                }
-            }
+                await EnsureTableStructureAsync(connection, radModuleDef, isStarterTable: true, cancellationToken);
             
-            // Create/sync ModelRecord table second
             if (modelRecordDef != null)
-            {
-                var tableExists = await TableExistsAsync(connection, "dbo", "ModelRecord", cancellationToken);
-                if (!tableExists)
-                {
-                    var ddl = GenerateCreateTableDdl(modelRecordDef);
-                    using var cmd = connection.CreateCommand();
-                    cmd.CommandText = ddl;
-                    await cmd.ExecuteNonQueryAsync(cancellationToken);
-                }
-                else
-                {
-                    // Table exists - sync columns to ensure CreatedByDisplayName/ModifiedByDisplayName exist
-                    var storedHash = await GetStoredHashAsync(connection, "ModelRecord", cancellationToken);
-                    if (storedHash != modelRecordDef.VersionHash)
-                    {
-                        await SyncColumnsAsync(connection, modelRecordDef, cancellationToken);
-                    }
-                }
-            }
+                await EnsureTableStructureAsync(connection, modelRecordDef, isStarterTable: true, cancellationToken);
         }
 
         private void EnsureViewsRegistered()
@@ -237,7 +215,12 @@ namespace TipsyBaboon.SqlServer.Data
             }
         }
 
-        private async Task EnsureModuleSchemaAsync(string moduleName, string connectionString, CancellationToken cancellationToken)
+        /// <summary>
+        /// Creates/alters all table structures, indexes, and FK constraints for a module.
+        /// Does NOT insert seeds or invariants — those are deferred until all tables and FK targets exist.
+        /// </summary>
+        /// <returns>The set of SchemaDefinitions for tables that were newly created this run.</returns>
+        private async Task<IReadOnlyList<SchemaDefinition>> EnsureModuleSchemaAsync(string moduleName, string connectionString, CancellationToken cancellationToken)
         {
             await using var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString);
             await connection.OpenAsync(cancellationToken);
@@ -247,103 +230,100 @@ namespace TipsyBaboon.SqlServer.Data
                 .ToList();
 
             if (!moduleDefinitions.Any())
-            {
-                return;
-            }
+                return Array.Empty<SchemaDefinition>();
 
-            // Phase 1: Ensure starter tables exist (RADModule, then ModelRecord) - Governance module only
-            var radModuleDef = moduleDefinitions.FirstOrDefault(d => d.TableName == "RADModule");
-            var modelRecordDef = moduleDefinitions.FirstOrDefault(d => d.TableName == "ModelRecord");
-            var starterTables = new[] { radModuleDef, modelRecordDef }.Where(d => d != null).ToList();
-            var regularTables = moduleDefinitions.Where(d => d.TableName != "RADModule" && d.TableName != "ModelRecord").ToList();
-            
-            // Create starter tables first (RADModule before ModelRecord for FK consistency)
+            var starterTables = new[] {
+                moduleDefinitions.FirstOrDefault(d => d.TableName == "RADModule"),
+                moduleDefinitions.FirstOrDefault(d => d.TableName == "ModelRecord")
+            }.Where(d => d != null).Cast<SchemaDefinition>().ToList();
+
+            var regularTables = moduleDefinitions
+                .Where(d => d.TableName != "RADModule" && d.TableName != "ModelRecord")
+                .ToList();
+
+            var newTables = new List<SchemaDefinition>();
+
+            // Phase 1: Create/alter starter table structures (RADModule before ModelRecord for FK order)
             foreach (var definition in starterTables)
             {
-                if (definition == null) continue;
-                await EnsureTableAsync(connection, definition, isStarterTable: true, cancellationToken);
+                if (await EnsureTableStructureAsync(connection, definition, isStarterTable: true, cancellationToken))
+                    newTables.Add(definition);
             }
-            
-            // Phase 2: Process regular tables (create/alter, seeds/invariants)
-            // Note: ModelRecord registration happens centrally in Phase 3.5 of EnsureCoreSchemaAsync
+
+            // Phase 2: Create/alter regular table structures
             foreach (var definition in regularTables)
             {
-                await SyncTableAsync(connection, definition, cancellationToken);
+                if (await EnsureTableStructureAsync(connection, definition, isStarterTable: false, cancellationToken))
+                    newTables.Add(definition);
             }
-            
-            // Phase 3: Ensure indexes for all tables
+
+            // Phase 3: Indexes (after all tables exist)
             foreach (var definition in moduleDefinitions)
-            {
                 await EnsureIndexesAsync(connection, definition, cancellationToken);
-            }
-            
-            // Phase 4: Ensure foreign key constraints for all tables
+
+            // Phase 4: FK constraints (after all tables exist, before any data is written)
             foreach (var definition in moduleDefinitions)
-            {
                 await EnsureForeignKeysAsync(connection, definition, cancellationToken);
-            }
+
+            return newTables;
         }
         
-        private async Task EnsureTableAsync(SqlConnection connection, SchemaDefinition definition, bool isStarterTable, CancellationToken cancellationToken)
+        /// <summary>
+        /// Creates or alters the physical table structure for a single definition (DDL only — no seeds or invariants).
+        /// </summary>
+        /// <returns>True if the table was newly created; false if it already existed.</returns>
+        private async Task<bool> EnsureTableStructureAsync(SqlConnection connection, SchemaDefinition definition, bool isStarterTable, CancellationToken cancellationToken)
         {
             var tableExists = await TableExistsAsync(connection, "dbo", definition.TableName, cancellationToken);
-            
+
             if (!tableExists)
             {
                 var ddl = GenerateCreateTableDdl(definition);
                 using var cmd = connection.CreateCommand();
                 cmd.CommandText = ddl;
                 await cmd.ExecuteNonQueryAsync(cancellationToken);
-                
-                // Insert seed records for newly created tables
-                await InsertSeedRecordsAsync(connection, definition, cancellationToken);
+                return true;
             }
-            else if (!isStarterTable)
+
+            if (!isStarterTable)
             {
-                // For existing non-starter tables, check version and sync columns if needed
                 var storedHash = await GetStoredHashAsync(connection, definition.TableName, cancellationToken);
                 if (storedHash != definition.VersionHash)
-                {
                     await SyncColumnsAsync(connection, definition, cancellationToken);
-                }
             }
-            
-            // Upsert invariant records
-            await UpsertInvariantRecordsAsync(connection, definition, cancellationToken);
+
+            return false;
         }
-        
-        private async Task SyncTableAsync(SqlConnection connection, SchemaDefinition definition, CancellationToken cancellationToken)
+
+        /// <summary>
+        /// Inserts seeds for newly created tables and upserts invariants for all tables in a module.
+        /// Tables are processed in intra-module FK dependency order so referenced rows exist before referencing rows.
+        /// Call only after all table structures and FK constraints are in place.
+        /// </summary>
+        private async Task SeedAndUpsertInvariantsForModuleAsync(
+            string moduleName,
+            string connectionString,
+            IReadOnlyCollection<string> newTableNames,
+            CancellationToken cancellationToken)
         {
-            var tableExists = await TableExistsAsync(connection, "dbo", definition.TableName, cancellationToken);
-            var isNewTable = !tableExists;
-            
-            if (!tableExists)
+            await using var connection = new SqlConnection(connectionString);
+            await connection.OpenAsync(cancellationToken);
+
+            var moduleDefinitions = GetSchemaDefinitionsForSync()
+                .Where(d => string.Equals(d.ModuleName, moduleName, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+            // Process in FK dependency order computed at discovery time (FkDependencyDepth).
+            foreach (var definition in moduleDefinitions.OrderBy(d => d.FkDependencyDepth))
             {
-                // Create table
-                var ddl = GenerateCreateTableDdl(definition);
-                using var cmd = connection.CreateCommand();
-                cmd.CommandText = ddl;
-                await cmd.ExecuteNonQueryAsync(cancellationToken);
+                if (newTableNames.Contains(definition.TableName))
+                    await InsertSeedRecordsAsync(connection, definition, cancellationToken);
+
+                await UpsertInvariantRecordsAsync(connection, definition, cancellationToken);
             }
-            else
-            {
-                // Check version and sync columns if needed
-                var storedHash = await GetStoredHashAsync(connection, definition.TableName, cancellationToken);
-                if (storedHash != definition.VersionHash)
-                {
-                    await SyncColumnsAsync(connection, definition, cancellationToken);
-                }
-            }
-            
-            // Insert seed records only for new tables
-            if (isNewTable)
-            {
-                await InsertSeedRecordsAsync(connection, definition, cancellationToken);
-            }
-            
-            // Upsert invariant records
-            await UpsertInvariantRecordsAsync(connection, definition, cancellationToken);
         }
+
+
         
         private async Task UpsertModelRecordForTableAsync(SqlConnection connection, SchemaDefinition definition, Guid moduleId, CancellationToken cancellationToken)
         {

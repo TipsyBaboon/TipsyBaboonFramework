@@ -303,6 +303,47 @@ namespace TipsyBaboon.Core.Data
                 }
                 #endregion
 
+                #region Compute FK dependency depth for each schema definition
+                // Depth 0 = no intra-cache FK dependencies; depth N = max(dep depths) + 1.
+                // ForeignKeyTarget stores the [ForeignKey] attribute name, which by convention matches
+                // the class name and therefore the TableName for types without [Table] overrides.
+                // We check both TypeName and TableName to handle [Table]-renamed types.
+                var byNameInCache = new Dictionary<string, SchemaDefinition>(StringComparer.OrdinalIgnoreCase);
+                foreach (var def in cache.SchemaDefinitions.Values)
+                {
+                    byNameInCache[def.TableName] = def;
+                    if (!byNameInCache.ContainsKey(def.TypeName))
+                        byNameInCache[def.TypeName] = def;
+                }
+
+                var depthMemo = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+                int ComputeDepth(SchemaDefinition def, HashSet<string> visiting)
+                {
+                    if (depthMemo.TryGetValue(def.TableName, out var cached))
+                        return cached;
+
+                    // Cycle guard — treat cycles as depth 0 to avoid infinite recursion.
+                    if (!visiting.Add(def.TableName))
+                        return 0;
+
+                    int maxDepOfDeps = -1;
+                    foreach (var col in def.Columns.Where(c => c.IsForeignKey && !string.IsNullOrEmpty(c.ForeignKeyTarget)))
+                    {
+                        if (byNameInCache.TryGetValue(col.ForeignKeyTarget!, out var dep) && dep.TableName != def.TableName)
+                            maxDepOfDeps = Math.Max(maxDepOfDeps, ComputeDepth(dep, visiting));
+                    }
+
+                    visiting.Remove(def.TableName);
+                    var depth = maxDepOfDeps + 1;
+                    depthMemo[def.TableName] = depth;
+                    return depth;
+                }
+
+                foreach (var def in cache.SchemaDefinitions.Values)
+                    def.FkDependencyDepth = ComputeDepth(def, new HashSet<string>(StringComparer.OrdinalIgnoreCase));
+                #endregion
+
                 _cache[cacheKey] = cache;
 
                 return cache;
@@ -1184,6 +1225,14 @@ namespace TipsyBaboon.Core.Data
             .Where(c => c.IsPrimaryKey)
             .OrderBy(c => c.KeyOrdinal ?? 0)
             .ToList();
+
+        /// <summary>
+        /// Intra-cache FK dependency depth, computed once during discovery.
+        /// 0 = no FK dependencies within the same assembly set.
+        /// N = depends on tables at depth N-1.
+        /// Used to order seed/invariant inserts so referenced rows always exist first.
+        /// </summary>
+        public int FkDependencyDepth { get; set; }
     }
 
     // Internal struct used only during navigation property discovery phase
