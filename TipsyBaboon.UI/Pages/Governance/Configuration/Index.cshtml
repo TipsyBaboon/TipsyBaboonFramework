@@ -1,6 +1,7 @@
 @page "/Governance/Configuration"
 @model TipsyBaboon.UI.Pages.Governance.Configuration.IndexModel
 @using TipsyBaboon.UI.Rendering
+@using TipsyBaboon.UI.Configuration
 @using TipsyBaboon.Core
 @{
     ViewData["Title"] = "Configuration";
@@ -110,7 +111,7 @@
     <script>
         TipsyBaboon.Config.Init({
             formSelector: '#configForm',
-            saveUrl: '/Governance/Configuration?handler=Save'
+            saveUrl: '/@TipsyBaboonUIOptions.ApiRoutePrefix/configuration/save'
         });
     </script>
 }

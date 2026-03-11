@@ -1,7 +1,7 @@
 <Project>
   <PropertyGroup>
     <!-- Centralized version for all TipsyBaboon packages -->
-    <Version>1.1.2</Version>
+    <Version>1.1.3</Version>
     <Authors>TipsyBaboon</Authors>
     <Company>TipsyBaboon</Company>
     <Copyright>Copyright © TipsyBaboon 2026</Copyright>
